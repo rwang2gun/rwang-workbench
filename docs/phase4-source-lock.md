@@ -353,3 +353,64 @@ modified: none
 - **스캔**: personal identifier 0건, `/Users/`/`/home/` 0건, email 0건, secret/token 0건. **fail 0**.
 - **Internal dependency**: 두 플러그인 모두 Source Lock §3 표에서 self-ref only로 분류. `claude-automation-recommender` 내부 reference 표들이 ecosystem catalog로서 다른 플러그인 이름(code-reviewer, writing-rules, skill-development 등)을 **서술적**으로 언급하나, 이는 Skill 툴 load·Task 실행 dep이 아닌 문서 콘텐츠. 참조된 엔티티들도 Phase 4 완료 시 전부 productivity-pack에 존재 예정이므로 eventual consistency OK.
 - **modified**: none
+
+### 6.3 Batch 2 — hookify + mcp-server-dev
+
+- **작업일**: 2026-04-23
+- **대상**: productivity-pack (13 components)
+  - hookify (10 components): 1 skill + 4 commands + 4 hooks + 1 agent
+  - mcp-server-dev (3 components): 3 skills (build-mcp-server, build-mcp-app, build-mcpb)
+
+#### hookify 편입 파일 확장 (§2.3 표 대비 추가 복사)
+
+hookify는 순수 5개 component 파일 외에 **런타임 의존 파이썬 모듈 + hooks.json**이 있음. `hooks/pretooluse.py` 등이 `from core.config_loader import load_rules` 등을 통해 지역 모듈에 의존. 이들이 없으면 hooks 모두 ImportError fallback으로 무효화됨.
+
+- `hooks/` 전체: 4 hook .py + `__init__.py` + `hooks.json` (6 파일)
+- `core/` 전체: `__init__.py` + `config_loader.py` (297 lines) + `rule_engine.py` (313 lines) (3 파일)
+- `matchers/` : `__init__.py` (1 파일, 빈 패키지)
+- `utils/` : `__init__.py` (1 파일, 빈 패키지)
+- `examples/` : 4개 `.local.md` 룰 템플릿 (user-visible)
+
+총 hookify 편입 파일: **15개** (§2.3 표의 10 component count와는 차원이 다름 — component 수는 manifest 선언 가능한 논리 단위, 편입 파일은 런타임 포함 전체).
+
+배치 위치 결정: `core/`, `matchers/`, `utils/`, `examples/`를 **productivity-pack 루트**에 둠. hook script의 `sys.path.insert(0, PLUGIN_ROOT)` 패턴 유지, `modified: none`. 향후 다른 플러그인이 동명 디렉토리를 가지면 그 시점에 namespace 대응.
+
+#### python3 cross-platform 판단 (§4 리스크 4)
+
+hookify `hooks.json`의 `"command": "python3 ..."` 유지. 이유: Linux/macOS의 `python3` 표준성 vs Windows의 `python`/`py` 관례 중 전자를 우선. Windows 사용자는 `python3.exe` alias 또는 `py -3` wrapper 설정 책임을 짐. **modified: none** 확정 (치환 시 Unix 사용자가 깨짐).
+
+#### mcp-server-dev 배치 제약 (§3.5) 검증
+
+3개 skill(`build-mcp-server`, `build-mcp-app`, `build-mcpb`) 모두 `plugins/productivity-pack/skills/<name>/`의 sibling으로 배치. `../build-mcp-server/references/elicitation.md` 류 상대경로가 resolve됨. `build-mcpb/references/local-security.md` 같은 bare path는 upstream 문서의 textual 참조로 판단(실제 경로는 `skills/build-mcpb/references/...`로 존재).
+
+#### 헤더
+
+- hookify: 전 파일 `vendored-from: .../hookify`, `plugin-version: unset`
+- mcp-server-dev: 전 파일 `vendored-from: .../mcp-server-dev`, `plugin-version: unset`
+- `.py` 파일: `#` comment 헤더 (shebang 뒤 또는 빈 파일에 단독으로)
+- `.json` 파일 (`hooks/hooks.json`): JSON 표준에 주석 불가하여 헤더 생략 (Batch 1A `.json` 3개와 동일 처리)
+
+#### 스캔 결과
+
+| 패턴 | 건수 | 판정 | 사유 |
+|---|---|---|---|
+| 개인 식별자(rwang2gun/code1412 등) | 0 | pass | |
+| `/Users/`, `/home/` | 1건 | warn+allow | `server-capabilities.md:65` `file:///home/user/project` placeholder |
+| email | 3건 | warn+allow | `mcp-review@anthropic.com` 2건은 **Anthropic 공식 partner 지원 주소** (upstream Anthropic 문서 원본, 개인정보 아님), `@modelcontextprotocol/ext-apps@1.2.2` 1건은 npm scope 이름이지 이메일이 아닌 regex false positive |
+| secret/token | 0 | pass | |
+| KEY/TOKEN/SECRET/PASSWORD 하드코딩 | 0 | pass | |
+
+**fail 0건.**
+
+#### Internal dependency trace
+
+| From | To | 결과 |
+|---|---|---|
+| `/hookify`, `/configure`, `/list` → `hookify:writing-rules` | `skills/writing-rules/SKILL.md` | ✅ |
+| `/hookify` (Task tool) → `conversation-analyzer` | `agents/conversation-analyzer.md` | ✅ |
+| `hooks/hooks.json` → `python3 ${CLAUDE_PLUGIN_ROOT}/hooks/*.py` | 4개 .py 존재 | ✅ |
+| `hooks/pretooluse.py` 등 → `from core.config_loader`, `from core.rule_engine` | `core/` at pack root | ✅ |
+| build-mcp-app/SKILL.md → `../build-mcp-server/references/elicitation.md` | sibling skill 경로 | ✅ |
+| build-mcp-server → build-mcpb textual refs | sibling skill 존재 | ✅ (문서 내 참조, 절대경로 아님) |
+
+**전체 resolve. modified: none.**
