@@ -1,0 +1,7 @@
+{
+  "name": "analysis-pack",
+  "description": "Data analysis, SNA, trend reports, and standalone HTML build skills",
+  "version": "0.1.0-alpha",
+  "license": "MIT",
+  "keywords": ["analysis", "html", "report", "data", "trend"]
+}

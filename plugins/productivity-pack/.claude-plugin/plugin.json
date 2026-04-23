@@ -1,0 +1,7 @@
+{
+  "name": "productivity-pack",
+  "description": "Git sync, PR review, plugin development, hookify automation, and documentation workflows",
+  "version": "0.1.0-alpha",
+  "license": "MIT",
+  "keywords": ["git", "pr-review", "plugin-dev", "hookify", "productivity", "automation"]
+}

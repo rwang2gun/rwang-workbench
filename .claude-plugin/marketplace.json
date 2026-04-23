@@ -1,0 +1,18 @@
+{
+  "name": "rwang-workbench",
+  "owner": {
+    "name": "rwang2gun"
+  },
+  "plugins": [
+    {
+      "name": "analysis-pack",
+      "source": "./plugins/analysis-pack",
+      "description": "데이터 분석·SNA·트렌드 보고서·자립형 HTML 빌드용 범용 스킬 모음"
+    },
+    {
+      "name": "productivity-pack",
+      "source": "./plugins/productivity-pack",
+      "description": "Git 동기화·PR 리뷰·플러그인 개발·hookify 자동화·문서화 워크플로우"
+    }
+  ]
+}

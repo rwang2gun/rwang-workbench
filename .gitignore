@@ -1,0 +1,32 @@
+# Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Personal notes / archives (never commit)
+notes-*.md
+*-private.md
+*-personal.md
+scratch/
+
+# Claude Code local settings overlay (if any ever appears at repo root)
+.claude/settings.local.json

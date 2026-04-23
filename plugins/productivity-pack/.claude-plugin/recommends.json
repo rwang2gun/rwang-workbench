@@ -1,0 +1,12 @@
+{
+  "recommends": [
+    {
+      "name": "codex",
+      "marketplace": "openai/codex-plugin-cc",
+      "install_command": "/plugin marketplace add openai/codex-plugin-cc && /plugin install codex@openai-codex",
+      "reason": "/codex:review daily use + codex-rescue agent for long-running delegation",
+      "required": false,
+      "last_verified": "2026-04-23"
+    }
+  ]
+}
