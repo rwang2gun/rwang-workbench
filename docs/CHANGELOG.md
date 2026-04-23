@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+### Phase 4 vendoring — 2026-04-23
+
+- Phase 4 vendoring: 11 plugins, 44 components
+- Source: `docs/archive/phase4-source-lock.md`
+- Plugins: 11 (blocked: 0)
+- Components final: 44 (productivity-pack: 42, analysis-pack: 2)
+- Modified: minor=5, major=0, none=(remainder)
+- Scan: 0 finding (manual multi-pattern grep per `docs/archive/phase4-plan.md §5`; gitleaks deferred to Phase 6, `scripts/phase4-scan.ps1` not authored — Phase 6 absorbs this into `validate-plugins.ps1`)
+- Pending manual verification (§6.5): `/reload-plugins` + trigger one skill per pack
+
 ## [0.1.0-alpha] — 2026-04-23 — Phase 3 scaffold
 
 ### Added

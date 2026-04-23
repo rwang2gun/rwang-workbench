@@ -1,5 +1,5 @@
 {
-  "description": "Hookify plugin - User-configurable hooks from .local.md files",
+  "description": "productivity-pack hooks: hookify (user-configurable rules from .claude/hookify.*.local.md) + security-guidance (security reminder on Edit/Write/MultiEdit)",
   "hooks": {
     "PreToolUse": [
       {
@@ -10,6 +10,15 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/security_reminder_hook.py"
+          }
+        ],
+        "matcher": "Edit|Write|MultiEdit"
       }
     ],
     "PostToolUse": [
