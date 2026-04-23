@@ -284,3 +284,60 @@ selection A-1~A-4의 CONFIRM 항목을 실제 파일에 1:1 매핑. **전부 존
 ### 5.4 selection 문서 보정 방침
 
 `docs/workbench-selection-2026-04-23.md`의 요약표 수치(45 / 40 / 42)는 Phase 4 실행 목적으로 **이 source-lock 문서의 44가 우선**. selection 본문은 Phase 2 역사 문서로 보존하되 CHANGELOG 또는 Phase 4 마감 커밋 메시지에 수정 근거 기록.
+
+---
+
+## 6. Batch 진행 기록
+
+### 6.1 Batch 1A — plugin-dev (완료, 커밋 대기)
+
+- **작업일**: 2026-04-23
+- **대상**: plugin-dev → productivity-pack (7 skills + 1 command + 3 agents = 11 components)
+- **복사 방식**: `cp -r` 원본 그대로 (편집 금지), 이후 vendoring 헤더만 삽입
+- **실파일 수**: 57개 (`find skills commands agents -type f` 기준)
+  - `.md`: 44개 — HTML comment 헤더, frontmatter 존재 시 closing `---` 뒤에 삽입, 없으면 최상단
+  - `.sh`: 10개 — `#` comment 헤더, shebang 뒤에 삽입
+  - `.json`: 3개 (mcp-integration/examples/*.json) — JSON 표준에 주석 불가하여 **헤더 생략**. 원본 무수정.
+
+#### 헤더 삽입 검증
+
+`grep -L "vendored-from"` 결과 0건 (헤더 누락 없음, `.json` 3개 제외).
+
+모든 헤더 내용:
+```
+vendored-from: https://github.com/anthropics/claude-plugins-public/tree/main/plugins/plugin-dev
+vendored-at: 2026-04-23
+original-version: marketplace-sha:cf62a6c02dc03db88da8eb7c61bdb9fd88da6326, plugin-version:unset
+modified: none
+```
+
+#### 스캔 결과
+
+| 패턴 | 파일 건수 | 판정 | 사유 |
+|---|---|---|---|
+| `rwang2gun` / `code1412` / `C:\Users\code1412` / `D:\claude` | 0 | pass | 개인 식별자 없음 |
+| `/Users/`, `/home/` | 7건 | warn+allow | 모두 anti-pattern 예시(❌), `alice`/`name` 가상 사용자, 또는 hook-linter의 탐지 regex 패턴 |
+| email | 9건 | warn+allow | 전부 `@example.com` 또는 `@company.com` RFC 예약 placeholder |
+| PEM/ghp/sk- token | 0 | pass | — |
+| KEY/TOKEN/SECRET/PASSWORD 하드코딩 | 1건 | warn+allow | `authentication.md:227` `DB_PASSWORD=mypassword` — `.env` 파일 예시 블록 내 명백한 placeholder |
+| `.env` 참조 | 3건 | warn+allow | 전부 hook 스크립트의 `.env` 파일명 **탐지**용 (쓰기 차단 방어 코드) |
+
+**fail 0건**. 모든 warn은 §5 Placeholder 특례 조건(`example`/`demo`/`sample`/`placeholder` 문맥) 충족.
+
+#### Internal dependency 수동 trace
+
+§3.2 표의 모든 참조가 productivity-pack 내부에서 resolve됨:
+
+| From | To | 검증 |
+|---|---|---|
+| `/create-plugin` → 7 sibling skills (plugin-structure, skill-development, command-development, agent-development, hook-development, mcp-integration, plugin-settings) | `skills/<name>/SKILL.md` | ✅ 7개 모두 존재 |
+| `/create-plugin` → 3 agents (agent-creator, plugin-validator, skill-reviewer) | `agents/<name>.md` | ✅ 3개 모두 존재 |
+| `agent-creator.md:138` → plugin-validator agent | `agents/plugin-validator.md` | ✅ |
+| `plugin-validator.md:97` → `validate-agent.sh` from agent-development | `skills/agent-development/scripts/validate-agent.sh` | ✅ |
+| `plugin-validator.md:116` → `validate-hook-schema.sh` from hook-development | `skills/hook-development/scripts/validate-hook-schema.sh` | ✅ |
+
+**모든 참조 resolve 성공. modified: none 유지 가능 (경로 치환 없음).**
+
+#### 커밋 대기
+
+phase4-plan.md §2의 승인 지점 (Batch 1A 완료 후 1회) 해당. 사용자 승인 대기 중.
