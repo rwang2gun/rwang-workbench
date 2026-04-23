@@ -587,7 +587,8 @@ staging이 local-only라 여러 PC에서 설계 작업을 이어가려면 추가
 - ✅ Phase 2 완료 (2026-04-23) — `Work/workbench-selection-2026-04-23.md`. CONFIRM 45, Deferred 6, Dropped 18. Exit Gate 자동 부분 PASS, 인터랙티브 부분은 Phase 3 acceptance에 흡수.
 - ✅ 설계 패치 v1.5 (2026-04-23) — Phase 2 결정 + Codex 3차 리뷰 7건 반영 (스키마 guard, recommends.json v0.1 도입, 훅 재도입 완화, fixture 구체화, validate-plugins 승격 경로, 포터빌리티, 용어 정리)
 - 🔶 game-design-pack **유예** — Phase 2 결정. `marketplace.json` 미포함, draw.io 헬퍼 skill 재평가 큐로. 초기 배포는 analysis-pack + productivity-pack 2개.
-- ⬜ Phase 3 진행 예정 (스캐폴드 — 포터빌리티 acceptance 신규 포함)
-- ⬜ Phase 4~8
+- ✅ Phase 3 완료 (2026-04-23) — 스캐폴드 + GitHub public 리포 생성, 마켓플레이스 등록 + 두 팩 install/uninstall 검증, fresh clone 포터빌리티 통과(`D:/claude/rwang-workbench`), MASTER_PLAN `docs/`로 이관 완료.
+- ⬜ Phase 4 진행 예정 (편입 작업 — 🟢 CONFIRM 대상 vendoring + Source Lock)
+- ⬜ Phase 5~8
 
 각 Phase 시작 시 이 섹션 업데이트.
