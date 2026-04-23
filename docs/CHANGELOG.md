@@ -14,7 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 - Components final: 44 (productivity-pack: 42, analysis-pack: 2)
 - Modified: minor=5, major=0, none=(remainder)
 - Scan: 0 finding (manual multi-pattern grep per `docs/archive/phase4-plan.md §5`; gitleaks deferred to Phase 6, `scripts/phase4-scan.ps1` not authored — Phase 6 absorbs this into `validate-plugins.ps1`)
-- Pending manual verification (§6.5): `/reload-plugins` + trigger one skill per pack
+- Runtime verification (§6.5, 2026-04-23): `/reload-plugins` loaded 3 plugins · 18 skills · 19 agents · 8 hooks. `Skill(productivity-pack:plugin-structure)` and `Skill(analysis-pack:session-report)` both triggered successfully in desktop app; session-report launched `node analyze-sessions.mjs` from the vendored cache path.
+- Known issue deferred to Phase 5: Python-based hookify hooks emit non-blocking `Failed with status code: Python` on UserPromptSubmit / PreToolUse:Skill / PostToolUse:Skill (Windows `python3` vs `python` — Phase 4 plan §4 Risk #4 manifestation). Does not block skill execution.
 
 ## [0.1.0-alpha] — 2026-04-23 — Phase 3 scaffold
 

@@ -588,7 +588,7 @@ staging이 local-only라 여러 PC에서 설계 작업을 이어가려면 추가
 - ✅ 설계 패치 v1.5 (2026-04-23) — Phase 2 결정 + Codex 3차 리뷰 7건 반영 (스키마 guard, recommends.json v0.1 도입, 훅 재도입 완화, fixture 구체화, validate-plugins 승격 경로, 포터빌리티, 용어 정리)
 - 🔶 game-design-pack **유예** — Phase 2 결정. `marketplace.json` 미포함, draw.io 헬퍼 skill 재평가 큐로. 초기 배포는 analysis-pack + productivity-pack 2개.
 - ✅ Phase 3 완료 (2026-04-23) — 스캐폴드 + GitHub public 리포 생성, 마켓플레이스 등록 + 두 팩 install/uninstall 검증, fresh clone 포터빌리티 통과(`D:/claude/rwang-workbench`), MASTER_PLAN `docs/`로 이관 완료.
-- ✅ Phase 4 완료 (2026-04-23) — 11개 Apache-2.0 플러그인 vendoring, 44개 구성요소 편입 (productivity-pack 42 / analysis-pack 2), Source Lock + 헤더 + dependency trace + 스캔(0 finding). 5배치 커밋(Batch 1A/1B/2/3/4). `code-reviewer` 이름 충돌은 Option B rename(code-reviewer-feature / code-reviewer-pr)으로 해결. `hooks/hooks.json`은 hookify+security-guidance 병합. 상세: `docs/archive/phase4-source-lock.md` + `docs/archive/phase4-plan.md`. `/reload-plugins` 런타임 검증(§6.5)은 Claude Code 재기동 후 수동 확인 대기.
+- ✅ Phase 4 완료 (2026-04-23) — 11개 Apache-2.0 플러그인 vendoring, 44개 구성요소 편입 (productivity-pack 42 / analysis-pack 2), Source Lock + 헤더 + dependency trace + 스캔(0 finding). 5배치 커밋(Batch 1A/1B/2/3/4). `code-reviewer` 이름 충돌은 Option B rename(code-reviewer-feature / code-reviewer-pr)으로 해결. `hooks/hooks.json`은 hookify+security-guidance 병합. 상세: `docs/archive/phase4-source-lock.md` + `docs/archive/phase4-plan.md`. §6.5 런타임 검증 통과 (desktop app `/reload-plugins` → 18 skills 로드 → `plugin-structure`/`session-report` skill 배너 확인, CHANGELOG에 기록). Phase 5 이월 이슈: hookify Python hook이 Windows에서 `python3` 미존재로 non-blocking 실패(Phase 4 plan §4 Risk #4 발현).
 - ⬜ Phase 5~8
 
 각 Phase 시작 시 이 섹션 업데이트.
