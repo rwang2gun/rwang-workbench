@@ -1,0 +1,286 @@
+# Phase 4 Source Lock
+
+> **역할**: Phase 4 vendoring 대상 11개 플러그인의 원본 메타데이터 + 45개 컴포넌트 매핑 + 내부 의존성 표.
+> **수명**: Phase 4 진행 중 참조. 마감 커밋에서 `docs/archive/`로 이동.
+> **근거**: [phase4-plan.md](phase4-plan.md) §1.1–1.3 + MASTER_PLAN v1.5 §3.5.
+> **업데이트 이력**: 2026-04-23 §1.3 resolve 완료, Components/Dependencies/Aliases 작성 중.
+
+---
+
+## 0. Resolve 요약
+
+- **11개 전부 §1.3 단계 2 (marketplaces cache 직접 탐색)로 resolve 성공.** 단계 3/4 진입 사례 없음.
+- **LICENSE 전수 Apache-2.0 확인** — 11개 각 플러그인 루트 `LICENSE` 파일의 2번째 라인 "Apache License" + 3번째 라인 "Version 2.0, January 2004".
+- **마켓플레이스 체크아웃 sha**: `cf62a6c02dc03db88da8eb7c61bdb9fd88da6326` (`~/.claude/plugins/marketplaces/claude-plugins-official/.gcs-sha`, 2026-04-23 기준)
+- **두 upstream 리포로 분산 표기** — homepage 기준:
+  - `anthropics/claude-plugins-official` 5개: claude-code-setup, claude-md-management, mcp-server-dev, playground, session-report
+  - `anthropics/claude-plugins-public` 6개: commit-commands, feature-dev, hookify, plugin-dev, pr-review-toolkit, security-guidance
+  - 실로컬 resolve 경로는 **둘 다 `claude-plugins-official` 마켓플레이스 캐시**에 있음 (public 내용을 official이 흡수한 것으로 추정). `vendored-from`에는 marketplace.json의 `homepage` 값을 그대로 사용.
+- **Blocked 플러그인**: 0개.
+
+---
+
+## 1. Source Lock Table (§1.3)
+
+| # | Plugin | Resolve 단계 | Local Path (`~/.claude/plugins/marketplaces/claude-plugins-official/plugins/<name>/`) | `plugin.json` version | LICENSE Evidence Path | Apache-2.0 확인 | Homepage (vendored-from) |
+|---|---|---|---|---|---|---|---|
+| 1 | `claude-code-setup` | 2 | `plugins/claude-code-setup/` | `1.0.0` | `plugins/claude-code-setup/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-official/tree/main/plugins/claude-code-setup` |
+| 2 | `claude-md-management` | 2 | `plugins/claude-md-management/` | `1.0.0` | `plugins/claude-md-management/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-official/tree/main/plugins/claude-md-management` |
+| 3 | `commit-commands` | 2 | `plugins/commit-commands/` | _(unset)_ | `plugins/commit-commands/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-public/tree/main/plugins/commit-commands` |
+| 4 | `feature-dev` | 2 | `plugins/feature-dev/` | _(unset)_ | `plugins/feature-dev/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-public/tree/main/plugins/feature-dev` |
+| 5 | `hookify` | 2 | `plugins/hookify/` | _(unset)_ | `plugins/hookify/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-public/tree/main/plugins/hookify` |
+| 6 | `mcp-server-dev` | 2 | `plugins/mcp-server-dev/` | _(unset)_ | `plugins/mcp-server-dev/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-official/tree/main/plugins/mcp-server-dev` |
+| 7 | `playground` | 2 | `plugins/playground/` | _(unset)_ | `plugins/playground/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-official/tree/main/plugins/playground` |
+| 8 | `plugin-dev` | 2 | `plugins/plugin-dev/` | _(unset)_ | `plugins/plugin-dev/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-public/tree/main/plugins/plugin-dev` |
+| 9 | `pr-review-toolkit` | 2 | `plugins/pr-review-toolkit/` | _(unset)_ | `plugins/pr-review-toolkit/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-public/tree/main/plugins/pr-review-toolkit` |
+| 10 | `security-guidance` | 2 | `plugins/security-guidance/` | _(unset)_ | `plugins/security-guidance/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-public/tree/main/plugins/security-guidance` |
+| 11 | `session-report` | 2 | `plugins/session-report/` | _(no plugin.json)_ | `plugins/session-report/LICENSE` | ✅ | `https://github.com/anthropics/claude-plugins-official/tree/main/plugins/session-report` |
+
+> **Original-version 기록 규칙**: 각 편입 파일의 vendoring 헤더 `original-version` 필드는 다음 2개 값을 이어 붙여서 기록한다 — `marketplace-sha:cf62a6c02dc03db88da8eb7c61bdb9fd88da6326, plugin-version:<위 표의 plugin.json version 또는 unset>`.
+
+---
+
+## 2. Components (§1.1)
+
+selection A-1~A-4의 CONFIRM 항목을 실제 파일에 1:1 매핑. **전부 존재 확인 완료**.
+
+### 2.1 Skills (15)
+
+| # | Plugin | Selection의 스킬명 | 실제 디렉토리 | 대상 팩 |
+|---|---|---|---|---|
+| 1 | claude-code-setup | claude-automation-recommender | `skills/claude-automation-recommender/SKILL.md` | productivity |
+| 2 | claude-md-management | claude-md-improver | `skills/claude-md-improver/SKILL.md` | productivity |
+| 3 | hookify | ⚠️ selection은 `writing-hookify-rules` | **실제: `skills/writing-rules/SKILL.md`** | productivity |
+| 4 | mcp-server-dev | build-mcp-server | `skills/build-mcp-server/SKILL.md` | productivity |
+| 5 | mcp-server-dev | build-mcp-app | `skills/build-mcp-app/SKILL.md` | productivity |
+| 6 | mcp-server-dev | build-mcpb | `skills/build-mcpb/SKILL.md` | productivity |
+| 7 | playground | playground | `skills/playground/SKILL.md` | **analysis** |
+| 8 | plugin-dev | plugin-structure | `skills/plugin-structure/SKILL.md` | productivity |
+| 9 | plugin-dev | skill-development | `skills/skill-development/SKILL.md` | productivity |
+| 10 | plugin-dev | command-development | `skills/command-development/SKILL.md` | productivity |
+| 11 | plugin-dev | agent-development | `skills/agent-development/SKILL.md` | productivity |
+| 12 | plugin-dev | hook-development | `skills/hook-development/SKILL.md` | productivity |
+| 13 | plugin-dev | mcp-integration | `skills/mcp-integration/SKILL.md` | productivity |
+| 14 | plugin-dev | plugin-settings | `skills/plugin-settings/SKILL.md` | productivity |
+| 15 | session-report | session-report | `skills/session-report/SKILL.md` | **analysis** |
+
+> **Selection 오기 수정**: `writing-hookify-rules` → `writing-rules` (실제 디렉토리명). `vendored-from`에는 실제 이름 사용.
+
+### 2.2 Commands (11)
+
+| # | Plugin | Selection의 명령어 | 실제 파일 | 대상 팩 |
+|---|---|---|---|---|
+| 1 | claude-md-management | `/revise-claude-md` | `commands/revise-claude-md.md` | productivity |
+| 2 | commit-commands | `/clean_gone` | `commands/clean_gone.md` | productivity |
+| 3 | commit-commands | `/commit` | `commands/commit.md` | productivity |
+| 4 | commit-commands | `/commit-push-pr` | `commands/commit-push-pr.md` | productivity |
+| 5 | feature-dev | `/feature-dev` | `commands/feature-dev.md` | productivity |
+| 6 | hookify | `/hookify` | `commands/hookify.md` | productivity |
+| 7 | hookify | `/configure` | `commands/configure.md` | productivity |
+| 8 | hookify | `/list` | `commands/list.md` | productivity |
+| 9 | hookify | `/help` | `commands/help.md` | productivity |
+| 10 | plugin-dev | `/create-plugin` | `commands/create-plugin.md` | productivity |
+| 11 | pr-review-toolkit | `/review-pr` | `commands/review-pr.md` | productivity |
+
+### 2.3 Hooks (5)
+
+| # | Plugin | 이벤트 | 실제 파일 | 런타임 | 대상 팩 |
+|---|---|---|---|---|---|
+| 1 | hookify | PreToolUse | `hooks/pretooluse.py` | python | productivity |
+| 2 | hookify | PostToolUse | `hooks/posttooluse.py` | python | productivity |
+| 3 | hookify | Stop | `hooks/stop.py` | python | productivity |
+| 4 | hookify | UserPromptSubmit | `hooks/userpromptsubmit.py` | python | productivity |
+| 5 | security-guidance | PreToolUse | `hooks/security_reminder_hook.py` | python | productivity |
+
+> hookify는 `hooks/hooks.json` 매니페스트도 함께 존재 — 편입 시 파일 세트 일체로 복사.
+
+### 2.4 Agents (13)
+
+| # | Plugin | Agent | 실제 파일 | 대상 팩 |
+|---|---|---|---|---|
+| 1 | feature-dev | code-architect | `agents/code-architect.md` | productivity |
+| 2 | feature-dev | code-explorer | `agents/code-explorer.md` | productivity |
+| 3 | feature-dev | code-reviewer | `agents/code-reviewer.md` | productivity |
+| 4 | hookify | conversation-analyzer | `agents/conversation-analyzer.md` | productivity |
+| 5 | plugin-dev | agent-creator | `agents/agent-creator.md` | productivity |
+| 6 | plugin-dev | plugin-validator | `agents/plugin-validator.md` | productivity |
+| 7 | plugin-dev | skill-reviewer | `agents/skill-reviewer.md` | productivity |
+| 8 | pr-review-toolkit | code-reviewer | `agents/code-reviewer.md` | productivity |
+| 9 | pr-review-toolkit | code-simplifier | `agents/code-simplifier.md` | productivity |
+| 10 | pr-review-toolkit | comment-analyzer | `agents/comment-analyzer.md` | productivity |
+| 11 | pr-review-toolkit | pr-test-analyzer | `agents/pr-test-analyzer.md` | productivity |
+| 12 | pr-review-toolkit | silent-failure-hunter | `agents/silent-failure-hunter.md` | productivity |
+| 13 | pr-review-toolkit | type-design-analyzer | `agents/type-design-analyzer.md` | productivity |
+
+> ⚠️ **Agent 이름 충돌**: `code-reviewer`가 feature-dev와 pr-review-toolkit 양쪽에 존재. 편입 시 **같은 팩 내에서 파일명 충돌** 발생. 대응: 팩 내 배치 경로를 원본 플러그인 디렉토리로 분리 (`agents/feature-dev/code-reviewer.md` vs `agents/pr-review-toolkit/code-reviewer.md`)하거나, frontmatter name을 `code-reviewer-feature` / `code-reviewer-pr`로 분화. §3.6.5에서 단일화하지 않은 이유(두 agent의 역할·모델이 다름: feature-dev는 sonnet, pr-review-toolkit는 opus)와 맞물려, **별도 파일 유지** 권장. 편입 시 경로 분리 방식으로 처리.
+
+---
+
+## 3. Internal Dependencies (§1.2)
+
+§1.2 detection 규칙대로 11개 플러그인 내부 Grep 전수 조사 완료. 단일 세트(commit-commands, claude-code-setup, claude-md-management, playground, session-report, security-guidance)는 self-ref 외 cross-ref 없음. 다음은 cross-ref 있는 세트.
+
+### 3.1 hookify
+
+| From | Type | To | Reference Form | 파일 | 편입 시 resolve 필요 |
+|---|---|---|---|---|---|
+| `/configure` (command) | load | `writing-rules` (skill) | `hookify:writing-rules` (namespaced) | `commands/configure.md:8` | 스킬 경로 동일 팩 내 배치 |
+| `/hookify` (command) | load | `writing-rules` (skill) | `hookify:writing-rules` | `commands/hookify.md:9` | 동일 |
+| `/list` (command) | load | `writing-rules` (skill) | `hookify:writing-rules` | `commands/list.md:8` | 동일 |
+| `/hookify` (command) | launch (Task tool) | `conversation-analyzer` (agent) | `conversation-analyzer agent` | `commands/hookify.md:25,30` | agent 이름으로 resolve |
+| `/configure` (command) | mention | `/hookify:list` | `/hookify:list` | `commands/configure.md:116` | cross-command URL, self-namespace |
+| `conversation-analyzer` (agent) | mention | `/hookify` (command) | `/hookify command` | `agents/conversation-analyzer.md:3,172` | doc reference only |
+
+### 3.2 plugin-dev
+
+| From | Type | To | Reference Form | 파일 | 편입 시 resolve 필요 |
+|---|---|---|---|---|---|
+| `/create-plugin` (command) | load (Skill tool) | `plugin-structure` (skill) | "Load plugin-structure skill" | `commands/create-plugin.md:60,64` | 팩 내 형제 skill 위치 |
+| `/create-plugin` (command) | load | `skill-development` (skill) | 동일 | `:176,187,200` | 동일 |
+| `/create-plugin` (command) | load | `command-development` (skill) | 동일 | `:177,206` | 동일 |
+| `/create-plugin` (command) | load | `agent-development` (skill) | 동일 | `:178,217` | 동일 |
+| `/create-plugin` (command) | load | `hook-development` (skill) | 동일 | `:179,227` | 동일 |
+| `/create-plugin` (command) | load | `mcp-integration` (skill) | 동일 | `:180,237` | 동일 |
+| `/create-plugin` (command) | load | `plugin-settings` (skill) | 동일 | `:181,248` | 동일 |
+| `/create-plugin` (command) | use (Task tool) | `agent-creator` (agent) | "Use agent-creator agent" | `:26,218` | agent 이름 |
+| `/create-plugin` (command) | use | `plugin-validator` (agent) | 동일 | `:26,266` | 동일 |
+| `/create-plugin` (command) | use | `skill-reviewer` (agent) | 동일 | `:26,200` | 동일 |
+| `agent-creator` (agent) | suggest | `plugin-validator` (agent) | `Use the plugin-validator agent` | `agents/agent-creator.md:130` | agent 이름 |
+| `plugin-validator` (agent) | reference | `agent-development/scripts/validate-agent.sh` | "utility from agent-development skill" | `agents/plugin-validator.md:89` | **상대 경로 의존** — 스킬 내부 스크립트 참조 |
+| `plugin-validator` (agent) | reference | `hook-development/scripts/validate-hook-schema.sh` | 동일 | `agents/plugin-validator.md:108` | 동일 |
+
+### 3.3 feature-dev
+
+| From | Type | To | Reference Form | 파일 |
+|---|---|---|---|---|
+| `/feature-dev` (command) | Launch (Task tool) | `code-explorer` (agent) | "Launch code-explorer agents" | `commands/feature-dev.md:41` |
+| `/feature-dev` (command) | Launch | `code-architect` (agent) | "Launch code-architect agents" | `commands/feature-dev.md:78` |
+| `/feature-dev` (command) | Launch | `code-reviewer` (agent, **feature-dev 소속**) | "Launch code-reviewer agents" | `commands/feature-dev.md:106` |
+
+### 3.4 pr-review-toolkit
+
+| From | Type | To | Reference Form | 파일 |
+|---|---|---|---|---|
+| `/review-pr` (command) | mention | `code-reviewer` (agent, **pr-review-toolkit 소속**) | name-only | `commands/review-pr.md:38,137` |
+| `/review-pr` (command) | mention | `pr-test-analyzer` (agent) | name-only | `:39,122` |
+| `/review-pr` (command) | mention | `comment-analyzer` (agent) | name-only | `:40,117` |
+| `/review-pr` (command) | mention | `silent-failure-hunter` (agent) | name-only | `:41,127` |
+| `/review-pr` (command) | mention | `type-design-analyzer` (agent) | name-only | `:42,132` |
+| `/review-pr` (command) | mention | `code-simplifier` (agent) | name-only | `:43,142` |
+
+### 3.5 mcp-server-dev ⚠️ 상대경로 의존 주의
+
+| From | Type | To | Reference Form | 파일 |
+|---|---|---|---|---|
+| `build-mcp-app/SKILL.md` | relative-path | `build-mcp-server/references/elicitation.md` | `../build-mcp-server/references/elicitation.md` | `SKILL.md:54` |
+| `build-mcp-app/references/widget-templates.md` | relative-path | `../build-mcp-server/references/elicitation.md` | 동일 | `:131` |
+| `build-mcp-server/references/elicitation.md` | name-only | `build-mcp-app` (skill) | "`build-mcp-app` widgets" | `:5,124` |
+| `build-mcp-server/references/server-capabilities.md` | relative-path | `build-mcpb/references/local-security.md` | `build-mcpb/references/local-security.md` | `:66` |
+| `build-mcp-server/references/tool-design.md` | relative-path | `build-mcpb/references/local-security.md` | 동일 | `:151` |
+| `build-mcp-app/SKILL.md` | name-only | `build-mcp-server` (skill) | "`build-mcp-server` skill" | `:11` |
+| `build-mcp-app/SKILL.md` | name-only | `build-mcpb` (skill) | "`build-mcpb` skill" | `:83,252` |
+
+**🔴 편입 시 배치 제약**: 3개 skill(`build-mcp-server`, `build-mcp-app`, `build-mcpb`)은 반드시 **같은 팩의 `skills/` 디렉토리 내 형제**로 배치해야 함. 원본 상대경로(`../build-mcp-server/...`, `build-mcpb/references/...`)가 유지되어야 파일 참조 resolve 성공. productivity-pack의 `skills/build-mcp-server/`, `skills/build-mcp-app/`, `skills/build-mcpb/` 구조 확정.
+
+### 3.6 cross-plugin 참조 — **없음**
+
+11개 세트 간 cross-plugin 참조는 Grep에서 0건. 각 세트는 self-contained. 이는 배치 순서와 무관하게 세트별 편입이 가능하다는 뜻.
+
+---
+
+## 4. Aliases (§1.2)
+
+각 컴포넌트의 정식 이름과 별칭.
+
+| 컴포넌트 정식명 | 디렉토리명/파일명 | frontmatter `name:` | 추가 표기법 |
+|---|---|---|---|
+| hookify: writing-rules (skill) | `skills/writing-rules/` | `writing-rules` | `hookify:writing-rules` (namespaced) |
+| hookify: `/hookify` | `commands/hookify.md` | — | `/hookify`, `/hookify:hookify` |
+| hookify: `/configure` | `commands/configure.md` | — | `/hookify:configure` |
+| hookify: `/list` | `commands/list.md` | — | `/hookify:list` |
+| hookify: `/help` | `commands/help.md` | — | `/hookify:help` |
+| hookify: conversation-analyzer (agent) | `agents/conversation-analyzer.md` | `conversation-analyzer` | — |
+| plugin-dev: plugin-structure (skill) | `skills/plugin-structure/` | `plugin-structure` | — |
+| plugin-dev: skill-development (skill) | `skills/skill-development/` | `skill-development` | — |
+| plugin-dev: command-development (skill) | `skills/command-development/` | `command-development` | — |
+| plugin-dev: agent-development (skill) | `skills/agent-development/` | `agent-development` | — |
+| plugin-dev: hook-development (skill) | `skills/hook-development/` | `hook-development` | — |
+| plugin-dev: mcp-integration (skill) | `skills/mcp-integration/` | `mcp-integration` | — |
+| plugin-dev: plugin-settings (skill) | `skills/plugin-settings/` | `plugin-settings` | — |
+| plugin-dev: `/create-plugin` | `commands/create-plugin.md` | — | — |
+| plugin-dev: agent-creator (agent) | `agents/agent-creator.md` | `agent-creator` | — |
+| plugin-dev: plugin-validator (agent) | `agents/plugin-validator.md` | `plugin-validator` | — |
+| plugin-dev: skill-reviewer (agent) | `agents/skill-reviewer.md` | `skill-reviewer` | — |
+| feature-dev: code-architect (agent) | `agents/code-architect.md` | `code-architect` | — |
+| feature-dev: code-explorer (agent) | `agents/code-explorer.md` | `code-explorer` | — |
+| feature-dev: **code-reviewer** (agent) | `agents/code-reviewer.md` | `code-reviewer` | **충돌 해결 권장 alias**: `code-reviewer-feature` |
+| feature-dev: `/feature-dev` | `commands/feature-dev.md` | — | — |
+| pr-review-toolkit: **code-reviewer** (agent) | `agents/code-reviewer.md` | `code-reviewer` | **충돌 해결 권장 alias**: `code-reviewer-pr` (opus, differs from feature-dev sonnet) |
+| pr-review-toolkit: code-simplifier (agent) | `agents/code-simplifier.md` | `code-simplifier` | — |
+| pr-review-toolkit: comment-analyzer (agent) | `agents/comment-analyzer.md` | `comment-analyzer` | — |
+| pr-review-toolkit: pr-test-analyzer (agent) | `agents/pr-test-analyzer.md` | `pr-test-analyzer` | — |
+| pr-review-toolkit: silent-failure-hunter (agent) | `agents/silent-failure-hunter.md` | `silent-failure-hunter` | — |
+| pr-review-toolkit: type-design-analyzer (agent) | `agents/type-design-analyzer.md` | `type-design-analyzer` | — |
+| pr-review-toolkit: `/review-pr` | `commands/review-pr.md` | — | — |
+| mcp-server-dev: build-mcp-server (skill) | `skills/build-mcp-server/` | `build-mcp-server` | — |
+| mcp-server-dev: build-mcp-app (skill) | `skills/build-mcp-app/` | `build-mcp-app` | — |
+| mcp-server-dev: build-mcpb (skill) | `skills/build-mcpb/` | `build-mcpb` | — |
+| commit-commands: `/commit`, `/commit-push-pr`, `/clean_gone` | `commands/*.md` | — | — |
+| claude-code-setup: claude-automation-recommender (skill) | `skills/claude-automation-recommender/` | `claude-automation-recommender` | — |
+| claude-md-management: claude-md-improver (skill) | `skills/claude-md-improver/` | `claude-md-improver` | — |
+| claude-md-management: `/revise-claude-md` | `commands/revise-claude-md.md` | — | — |
+| playground: playground (skill) | `skills/playground/` | `playground` | — |
+| session-report: session-report (skill) | `skills/session-report/` | `session-report` | — |
+| security-guidance: PreToolUse hook | `hooks/security_reminder_hook.py` | — | `hooks.json`에서 참조 |
+| hookify: 4 hooks | `hooks/{pre,post,...}tooluse.py` | — | `hooks/hooks.json`에서 참조 |
+
+### 4.1 Agent 이름 충돌 대응 방침 ⭐
+
+**`code-reviewer` 이름 충돌** (feature-dev sonnet vs pr-review-toolkit opus) 처리:
+
+- **옵션 A** — frontmatter `name:` 보존 + 파일 경로 분리: `agents/feature-dev/code-reviewer.md`, `agents/pr-review-toolkit/code-reviewer.md`. Claude Code의 agent 해석이 디렉토리 구조로 분기되는지 확인 필요.
+- **옵션 B** — frontmatter `name:` 분화: `code-reviewer-feature`, `code-reviewer-pr`. 각 플러그인 내부 명령어(`/feature-dev`, `/review-pr`)의 호출 코드도 alias로 수정 → `modified: minor`.
+
+**Batch 3 진입 전 옵션 최종 선택**. 초기값은 **옵션 B**를 잠정 선택 (더 단순, agent name 명시적, Claude Code의 agent 해석이 경로보다 frontmatter name에 의존할 확률 높음).
+
+옵션 B 선택 시 modified 대상:
+- `plugins/productivity-pack/agents/code-reviewer-feature.md` (rename, frontmatter name 변경, `modified: minor`)
+- `plugins/productivity-pack/agents/code-reviewer-pr.md` (동일)
+- `plugins/productivity-pack/commands/feature-dev.md` (ref 수정, `modified: minor`)
+- `plugins/productivity-pack/commands/review-pr.md` (ref 수정, `modified: minor`)
+
+---
+
+## 5. Authoritative Count (§1.1 5단계 exit)
+
+### 5.1 실제 파일 기준 집계
+
+| 유형 | productivity-pack | analysis-pack | 합계 |
+|---|---|---|---|
+| Skills | 13 | 2 | 15 |
+| Commands | 11 | 0 | 11 |
+| Hooks | 5 | 0 | 5 |
+| Agents | 13 | 0 | 13 |
+| **총계** | **42** | **2** | **44** |
+
+### 5.2 불일치 원인 규명
+
+| 출처 | 수치 | 원인 |
+|---|---|---|
+| selection 요약표 "CONFIRM 총계" | 45 | **hookify `/help` 이중 집계** — A-2 표에 이미 포함(11행 중 한 행)인데 요약의 "Commands 11 (+ hookify `/help` = 12)" 부기 때문에 총합에 1 초과 가산 |
+| selection 요약표 "팩별 분포 productivity 40, analysis 2" | 42 | 분포 합(42)은 실제와 정확히 1 적음. productivity의 Skills/Commands/Hooks/Agents 세부 합은 13+11+5+13=42이므로 **"productivity 40"은 단순 숫자 오기** (42가 맞음) |
+| phase4-plan.md §2 Batch 표 합계 | 44 | **실제값과 일치** |
+| 실제 파일 기준 (본 문서 §5.1) | **44** | **authoritative** |
+
+### 5.3 선언
+
+**Phase 4의 authoritative component count = 44.**
+
+- productivity-pack: 42 (Skills 13 / Commands 11 / Hooks 5 / Agents 13)
+- analysis-pack: 2 (Skills: playground, session-report)
+
+이 값은 phase4-plan.md §0 Scope, §2 배치표, §6.1 Exit Criteria, §6.6 CHANGELOG 메타 전부의 기준.
+
+### 5.4 selection 문서 보정 방침
+
+`docs/workbench-selection-2026-04-23.md`의 요약표 수치(45 / 40 / 42)는 Phase 4 실행 목적으로 **이 source-lock 문서의 44가 우선**. selection 본문은 Phase 2 역사 문서로 보존하되 CHANGELOG 또는 Phase 4 마감 커밋 메시지에 수정 근거 기록.
