@@ -338,6 +338,18 @@ modified: none
 
 **모든 참조 resolve 성공. modified: none 유지 가능 (경로 치환 없음).**
 
-#### 커밋 대기
+#### 커밋
 
-phase4-plan.md §2의 승인 지점 (Batch 1A 완료 후 1회) 해당. 사용자 승인 대기 중.
+**Batch 1A 커밋**: `075309d` (2026-04-23) — 58 files, +22070 insertions. phase4-plan.md §2의 승인 지점 (Batch 1A 완료 후 1회) 사용자 승인 완료.
+
+### 6.2 Batch 1B — claude-code-setup + claude-md-management
+
+- **작업일**: 2026-04-23
+- **대상**: productivity-pack (3 components)
+  - claude-code-setup → `skills/claude-automation-recommender/` (6 files)
+  - claude-md-management → `skills/claude-md-improver/` (4 files) + `commands/revise-claude-md.md` (1 file)
+- **총 파일**: 11개, 모두 `.md`. `.sh`·`.json` 0건.
+- **헤더**: plugin별 `vendored-from` URL·`plugin-version: 1.0.0` 적용. 누락 0건.
+- **스캔**: personal identifier 0건, `/Users/`/`/home/` 0건, email 0건, secret/token 0건. **fail 0**.
+- **Internal dependency**: 두 플러그인 모두 Source Lock §3 표에서 self-ref only로 분류. `claude-automation-recommender` 내부 reference 표들이 ecosystem catalog로서 다른 플러그인 이름(code-reviewer, writing-rules, skill-development 등)을 **서술적**으로 언급하나, 이는 Skill 툴 load·Task 실행 dep이 아닌 문서 콘텐츠. 참조된 엔티티들도 Phase 4 완료 시 전부 productivity-pack에 존재 예정이므로 eventual consistency OK.
+- **modified**: none
