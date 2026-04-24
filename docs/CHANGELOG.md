@@ -39,6 +39,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 - `docs/MASTER_PLAN_v1.5.md` §8: Phase 5 completion status line.
 - `docs/phase5-plan.md` → `docs/archive/phase5-plan.md` (source-lock appendix preserved).
 
+**Phase 5 local verification — 2026-04-24**
+
+- `git pull origin main` after PR #1 merge; 15 files updated, local main at `2dc0941`.
+- `check-recommended.mjs` 5 fixture scenarios pass: installed-codex (✅), installed-no-codex (❌), bad-json (parse-failed warning), unexpected-schema (warning), file-missing (warning).
+- `scripts/git-hooks/pre-commit` 3 scenarios pass: secret-pattern block (AKIA…), personal-path block (`C:/Users/code1412/…`), vendored `modified: none` protection block.
+- `hooks.json` all 5 commands confirmed `python` (not `python3`); `recommends.json` codex entry structure valid.
+
 **Phase 4 Known Issue resolution**
 
 - Python hook `Failed with status code: Python` issue: **Resolved in Phase 5** (A1 `python3` → `python` + graceful skip on Python-2-default systems via hookify's existing ImportError handler; see Accepted Limitations below).
