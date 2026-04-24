@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+### Phase 6 — 2026-04-24 (in progress)
+
+- Phase 6B interactive verification passed (2026-04-24): B-0 clean state + hookify not-found (no standalone install) / B-1 marketplace add (Directory source) / B-2·B-3 installs / B-2a hook real execution confirmed via session-log attachments (PreToolUse+PostToolUse `hook_system_message` = `SMOKE-OK`; UI render not observed) / B-4·B-4a skill loads / B-5 `check-recommended` command load PASS (💡 `marketplace-not-found` non-blocking) / B-6·B-7 uninstalls / B-8 filesystem uninstall OK, in-session skill namespace cache persists until session restart (Claude Code plugin lifecycle, low-gate).
+
 ### Phase 5 — 2026-04-24
 
 **Phase 5A — Python hook cross-platform fix + README Prerequisites**
