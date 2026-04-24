@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+### Phase 7 — 2026-04-25 (in progress)
+
+- Phase 7C interactive reinstall passed (2026-04-25): `claude plugin install` × 2 → `claude plugin list`에 codex@openai-codex · productivity-pack@rwang-workbench · analysis-pack@rwang-workbench 3개 enabled 확인. 재설치 직후 `check-orphan-originals.ps1` 재실행도 12 PASS / 0 WARN / 0 FAIL / 2 INFO (exit 0 clean) 유지.
+
 ### Phase 6 — 2026-04-24
 
 **Phase 6A — `scripts/validate-plugins.ps1` (V-1~V-6)**
