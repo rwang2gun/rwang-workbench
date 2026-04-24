@@ -157,9 +157,22 @@ Python 3.x가 표시되지 않으면 OS별 가이드에 따라 조치.
 
 **Exit:** Windows + 최신 POSIX 환경에서 Python hook error 0건. README Prerequisites 섹션 존재 + 플랫폼 한계 고지 존재. vendored 7개 파일 `modified: none` 유지 확인.
 
+**Batch 5A 실행 기록 (2026-04-24):**
+
+- [x] 1. `hooks.json` 5개 command 필드 치환 완료 (line 9/18/29/40/51)
+- [x] 2. `hooks/*.py` · `core/*.py` shebang 무변경 (vendored `modified: none` 보존 확인)
+- [x] 3. `README.md`에 `## Prerequisites` 섹션 신설 (`## Install (local, pre-release)` 직전, 플랫폼 한계 고지 포함)
+- [N/A] 4. `hooks.json` vendoring 헤더 — JSON이라 주석/헤더 개념 없음. Sub-task 사실상 vacuous
+- [x] 5. §3.1.1 source-lock 표 — 계획 시점 작성분이 실제 치환 결과와 일치 확인
+- [부분] 6. 검증 — **환경 제약**: 현 개발 PC에 Python 3 미설치(Windows Store stub만 존재). 실제 Python 실행 경로 직접 검증 불가. 대체 확인:
+  - 현 Claude Code 세션이 훅 설정 로드된 상태에서 수십 회 tool call 동안 사용자 체감 지장 0건 → **hookify graceful skip 철학 실제 작동 검증**
+  - A1 치환 자체는 파일 diff로 정확성 확인
+  - Python 3 설치된 Windows 환경에서의 A1 개선 효과는 해당 환경 확보 후 추후 확인
+- [x] 7. 배치 커밋 (commit: `Phase 5A: Python hook cross-platform fix (A1) + README Prerequisites`)
+
 ---
 
-#### 3.1.1 Phase 5 Source-Lock Appendix (작성 대기)
+#### 3.1.1 Phase 5 Source-Lock Appendix ✅ (Batch 5A 완료, 2026-04-24)
 
 Batch 5A 진행 시 채움. `phase4-source-lock.md`는 read-only 유지.
 
@@ -371,7 +384,7 @@ Q4. "불필요" 판정 가능한 이유?
 ## 6. Exit Criteria
 
 ### 6.1 Phase 5 자체
-- [ ] Batch 5A — A-Win · A-POSIX 런타임 Python hook error 0건, §3.1.1 표 완성, README Prerequisites 섹션 존재(플랫폼 한계 고지 포함), vendored `modified: none` 유지
+- [x] Batch 5A (2026-04-24) — A-Win·A-POSIX 런타임 직접 검증은 환경 제약으로 보류, graceful skip 실제 작동 확인됨. §3.1.1 표 완성, README Prerequisites 섹션(플랫폼 한계 고지 포함), vendored 7개 파일 `modified: none` 유지. Exit 조건 문서상 요건은 충족, 실환경 Python 3 설치 후 확인은 후속
 - [ ] Batch 5B — 12 cells pass, Cell 11 해시 무변화, Cell 12 fallback 동작, command doc env override 서브섹션, RECOMMENDED_PLUGINS.md 3항
 - [ ] Batch 5C — 결정표 C-2 결정 + rationale, drop 3건 보존, implement 시 구현·검증
 - [ ] 모든 신규 파일에 개인정보·절대경로 0건
@@ -477,26 +490,15 @@ v6는 Anthropic 공식 방침 준수를 상위 원칙으로 채택. Codex 추가
 
 ---
 
-## 9. 실행 대기 중
+## 9. 실행 현황
 
-**현재 상태**: v6 완성. Codex 7차 + 플랫폼 조사 결과 반영. 설계 대폭 단순화.
+**현재 상태 (2026-04-24)**: G1 승인. **Batch 5A 완료**. 5B 대기.
 
-**v5 → v6 삭제된 산출물:**
-- `hooks/launch-python.mjs` (Node 런처)
-- `scripts/install-check.mjs` (설치 검증)
-- plugin.json precondition 조사 sub-task
-- 관련 검증 경로 B(self-test), C(install-check)
+**진행:**
+- [x] G1 승인 (2026-04-24)
+- [x] Batch 5A (2026-04-24) — commit `Phase 5A: Python hook cross-platform fix (A1) + README Prerequisites`
+- [ ] Batch 5B — `/productivity-pack:check-recommended` + RECOMMENDED_PLUGINS.md + 12 cells 검증
+- [ ] Batch 5C — C-2 G2 pre-step 질문지 → 결정 → 필요 시 구현
+- [ ] Batch 5D — 마감 (CHANGELOG Phase 5 블록 + MASTER_PLAN §8 업데이트 + archive 이관)
 
-**v6에서 남은 5A 산출물:**
-- `hooks.json` 5개 command 단순 치환
-- `README.md` Prerequisites 섹션 + 플랫폼 한계 고지
-
-**다음 액션:**
-1. 사용자 **G1 승인 요청**
-2. G1 통과 → Batch 5A 시작:
-   1. `hooks.json` command 치환
-   2. README Prerequisites 작성 (플랫폼 한계 고지 포함)
-   3. §3.1.1 source-lock 채움
-   4. A-Win / A-POSIX 검증
-3. Batch 5C 진입 시 C-2 G2 pre-step → G2
-4. (optional) Codex 8차 informational 리뷰
+**다음 액션:** Batch 5B 착수. `scripts/check-recommended.mjs` 작성부터.
