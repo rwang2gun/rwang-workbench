@@ -6,9 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
-### Phase 6 — 2026-04-24 (in progress)
+### Phase 6 — 2026-04-24
 
-- Phase 6B interactive verification passed (2026-04-24): B-0 clean state + hookify not-found (no standalone install) / B-1 marketplace add (Directory source) / B-2·B-3 installs / B-2a hook real execution confirmed via session-log attachments (PreToolUse+PostToolUse `hook_system_message` = `SMOKE-OK`; UI render not observed) / B-4·B-4a skill loads / B-5 `check-recommended` command load PASS (💡 `marketplace-not-found` non-blocking) / B-6·B-7 uninstalls / B-8 filesystem uninstall OK, in-session skill namespace cache persists until session restart (Claude Code plugin lifecycle, low-gate).
+**Phase 6A — `scripts/validate-plugins.ps1` (V-1~V-6)**
+
+- PowerShell 5.1 호환 validator 추가. 검증 항목: V-1 `marketplace.json` 구조(필수 필드 `name`/`owner`/`plugins[]` + JSON array 타입) / V-2 각 팩 `plugin.json` 필수 필드(`name`/`description`) / V-3 unknown 필드(허용 8개: `name`/`description`/`version`/`author`/`keywords`/`homepage`/`icon`/`license`) / V-4 `recommends.json` 구조(`recommends[]` + 각 항목 `name`·`reason`, JSON array 타입 보장) / V-5 `THIRD_PARTY_NOTICES` 일관성(vendored-from URL unique plugin set ↔ NOTICES 첫 번째 표 Plugin 컬럼 비교) / V-6 `scripts/git-hooks/pre-commit` 파일 존재.
+- 로컬 실행 결과: **7 PASS, 0 WARN, 0 FAIL, 1 INFO (exit 0)**. `V-5 11/11 plugins matched`.
+- Codex 2-round review: 1차 Low 2건 반영(V-1/V-4 `-is [Array]` 타입 체크 추가로 false PASS 방지), 2차 No findings.
+- Phase 2 exit gate 임시 스크립트(`Work/phase2-validate-plugins.ps1`) → 리포 내 정식 스크립트로 승격. Phase 8 배포 전 / 신규 컴포넌트 추가 시 재실행용.
+
+**Phase 6B — 인터랙티브 로컬 설치 재검증 (B-0~B-8)**
+
+- `claude plugin` CLI 전 단계 자동화. B-0 클린 확보 (원본 `hookify` 독립 설치 **not found** 확인, 두 팩 + GitHub-source marketplace 모두 제거) / B-1 `claude plugin marketplace add D:/claude/rwang-workbench` (Directory source로 재등록) / B-2·B-3 두 팩 install OK.
+- B-2a hook 실 실행 검증: 임시 `.claude/hookify.phase6-smoke.local.md` (`event: bash`, `pattern: phase6-hook-smoke`, `action: warn`, body `SMOKE-OK`) → `echo phase6-hook-smoke` → **세션 jsonl의 PreToolUse+PostToolUse `hook_system_message` attachment로 `SMOKE-OK` 발화 확증** (exit 0, 158ms). 스모크 파일 삭제 완료.
+- **Python 3 설치**: 이 PC에 Python 3 미설치 상태였음 → `winget install Python.Python.3.12 --scope user` 로 Python 3.12.10 설치, Claude Code 재시작 후 `python.exe` 리졸브가 `...Programs\Python\Python312\python.exe`로 전환됨 (기존 Windows Store stub은 PATH 후순위로 강등). CLAUDE.md 환경 특이사항 "Python 3 미설치" 해소.
+- B-4 `productivity-pack:help` / B-4a `analysis-pack:playground` skill 로드·응답 생성 / B-5 `/productivity-pack:check-recommended` command load PASS (출력은 💡 `marketplace-not-found` — production 경로에서 local Directory source marketplace를 스크립트가 resolve하지 못하는 현상; plan §3.2 판단 기준상 non-blocking) / B-6·B-7 uninstall OK.
+- B-8 (low-gate): filesystem uninstall 완료 (`installed_plugins.json` → codex만 잔존) 확인. 단 현재 세션 내 skill namespace 는 cache로 잔존 — Claude Code plugin lifecycle 공식 동작 (세션 재시작 시 해제). 투명 기록.
+- **Phase 7 진입 대체성 조건 충족**: 원본 hookify 없이 새 pack만 설치된 상태에서 command 1개(check-recommended) + skill 2개(help/playground) + hook 실 실행(smoke rule) 모두 성공.
+- **B-2a UI 렌더링 Known Issue**: Claude Code Desktop v2.1.111에서 `hook_system_message` attachment가 세션 jsonl에는 정확히 기록되지만 UI 채팅에는 노출되지 않음. 기능(hook 발화·실행·응답 전송)은 모두 정상. v6 원칙에 따라 한계 투명 기록.
+
+**Phase 6C — Closure**
+
+- 본 CHANGELOG Phase 6 블록 확장 (6A/6B/6C 통합).
+- `docs/MASTER_PLAN_v1.5.md` §8: `⬜ Phase 6~8` → `✅ Phase 6 완료 (2026-04-24)` + `⬜ Phase 7~8`.
+- `docs/phase6-plan.md` → `docs/archive/phase6-plan.md` (v5까지 Codex 4회 리뷰 이력 보존).
 
 ### Phase 5 — 2026-04-24
 
