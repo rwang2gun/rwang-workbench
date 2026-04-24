@@ -4,42 +4,48 @@
 
 ---
 
-## 현재 상태 (2026-04-24)
+## 현재 상태 (2026-04-25)
 
 | Phase | 상태 | 비고 |
 |---|---|---|
 | 1–4 | ✅ 완료 | vendoring + 스캐폴드 + 44 컴포넌트 편입 |
 | 5 | ✅ 완료 | 4배치 (5A~5D). Python hook cross-platform + check-recommended + pre-commit hook + 마감 |
-| **6A** | ✅ 완료 (commit `33d5826`) | `scripts/validate-plugins.ps1` V-1~V-6 → 7 PASS / 0 FAIL / 1 INFO. Codex 2-round (1차 Low 2건 반영, 2차 No findings) |
-| **6B** | ✅ 완료 (commit `639d21a`) | `claude plugin` CLI로 B-0~B-8 자동화. hook 실 실행 세션 jsonl attachment 확증. Python 3.12.10 설치로 환경 특이사항 해소 |
-| **6C** | ✅ 완료 | 마감: CHANGELOG Phase 6 블록 + MASTER_PLAN §8 + phase6-plan archive 이관 + 본 CLAUDE.md 동기화 |
-| **Phase 6** | ✅ **전체 완료** | Phase 7 대기 |
+| 6 | ✅ 완료 | 3배치 (6A/6B/6C). `validate-plugins.ps1` 승격 + 인터랙티브 재검증 + Python 3.12 설치로 환경 특이사항 해소 |
+| **7A** | ✅ 완료 (commit `13ff93b`) | `scripts/check-orphan-originals.ps1` O-1~O-3 → 12 PASS / 0 WARN / 0 FAIL / 2 INFO (exit 0 clean). Codex 3-round (1차 High 2+Low 1, 2차 Low 2, 3차 No findings) |
+| **7B** | ⏭️ skip | 7A clean으로 정리 대상 없음 |
+| **7C** | ✅ 완료 (commit `7e38a38`) | 두 팩 재설치 + `claude plugin list` 3개 enabled + orphan-check 재확인 clean |
+| **7D** | ✅ 완료 | 마감: CHANGELOG Phase 7 블록 + MASTER_PLAN §8 + phase7-plan archive + 본 CLAUDE.md 동기화 |
+| **Phase 7** | ✅ **전체 완료** | Phase 8 대기 |
 
-**Working tree**: Phase 6C 마감 커밋 직후 → clean 유지.
+**Working tree**: Phase 7D 마감 커밋 직후 → clean 유지.
+
+**현재 enabled 플러그인**: codex@openai-codex, productivity-pack@rwang-workbench, analysis-pack@rwang-workbench (3개).
 
 **Repo-local 훅 활성화 상태**: `core.hooksPath = scripts/git-hooks` 로컬에 설정됨 (이 PC). 다른 PC에서 클론 후 1회 실행 필요.
 
 ---
 
-## 다음 액션 — Phase 7 착수
+## 다음 액션 — Phase 8 착수
 
-Phase 6 완료. 다음 세션은 Phase 7 실행 계획 작성으로 시작.
+Phase 7 완료. 다음 세션은 Phase 8 실행 계획 작성으로 시작.
 
-**Phase 7 예비 scope** (MASTER_PLAN v1.5 §5 참조):
-- 원본 플러그인 비활성화 (Anthropic 마켓플레이스의 11개 공식 플러그인이 설치돼 있으면 충돌 방지 정리)
-- 6B 대체성 조건은 이미 충족 (원본 hookify 부재 + command/skill/hook 실 실행 성공). Phase 7은 **이걸 공식 절차로** 수행하는 단계.
+**Phase 8 예비 scope** (MASTER_PLAN v1.5 §5 + §4.5 Public 전환 게이트):
+- §4.5 Public 전환 게이트 체크리스트: 라이선스 검토 / `THIRD_PARTY_NOTICES.md`(기존, 재확인) / **시크릿 스캔 자동화**(`gitleaks` 또는 `trufflehog`, 0 finding — Phase 4 이연) / `.mcp.json` 토큰 0건 / 절대경로·계정명 노출 0건 / `.env.example` / `.gitignore` 검증 / 공개 불가 자산 최종 확인
+- 통과 결과는 `docs/release-checklist-v{버전}.md`로 보존
+- `scripts/build-skills-zip.ps1`(§4.7 claude.ai Skills ZIP 파생 빌드)은 Phase 8 이후 선택 scope
 
-Phase 7 plan 착수 시 `docs/phase7-plan.md` 신규 생성 + MASTER_PLAN §8 업데이트 루틴 반복.
+Phase 8 plan 착수 시 `docs/phase8-plan.md` 신규 생성 + MASTER_PLAN §8 업데이트 루틴 반복.
 
 ---
 
 ## 핵심 설계 문서
 
 - **[docs/MASTER_PLAN_v1.5.md](docs/MASTER_PLAN_v1.5.md)** — 전체 설계. §5 Phase 계획 + §8 상태. **수정 금지** (역사적 기록). §8만 Phase 마감 시 업데이트
-- **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — Phase 5·6 블록 기록 완료. Phase 7부터 동일 패턴으로 추가
+- **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — Phase 5·6·7 블록 기록 완료. Phase 8부터 동일 패턴으로 추가
 - **[docs/RECOMMENDED_PLUGINS.md](docs/RECOMMENDED_PLUGINS.md)** — 5B 보강 완료. 향후 추천 항목 추가 시 갱신
-- **[docs/archive/](docs/archive/)** — 완료된 Phase 플랜·source-lock (`phase4-plan.md`, `phase4-source-lock.md`, `phase5-plan.md`, `phase6-plan.md`)
+- **[docs/archive/](docs/archive/)** — 완료된 Phase 플랜·source-lock (`phase4-plan.md`, `phase4-source-lock.md`, `phase5-plan.md`, `phase6-plan.md`, `phase7-plan.md`)
 - **[scripts/validate-plugins.ps1](scripts/validate-plugins.ps1)** — Phase 6A 승격 validator. Phase 8 배포 전 / 신규 컴포넌트 추가 시 재실행 (PS 5.1 호환)
+- **[scripts/check-orphan-originals.ps1](scripts/check-orphan-originals.ps1)** — Phase 7A orphan-originals detector. 다른 PC에서 셋업 시 1회 실행하여 원본 11개 독립 설치·`~/.claude/skills/` 복제본 여부 검증 (PS 5.1 호환, exit 0=clean / 2=WARN / 1=FAIL)
 
 ---
 
@@ -92,7 +98,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 
 ## 대기 중인 사용자 결정
 
-없음. Phase 6 전체 완료. Phase 7 착수 시점은 사용자 지시 대기.
+없음. Phase 7 전체 완료. Phase 8 착수 시점은 사용자 지시 대기.
 
 ---
 

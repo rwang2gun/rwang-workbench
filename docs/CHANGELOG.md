@@ -6,9 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
-### Phase 7 — 2026-04-25 (in progress)
+### Phase 7 — 2026-04-25
 
-- Phase 7C interactive reinstall passed (2026-04-25): `claude plugin install` × 2 → `claude plugin list`에 codex@openai-codex · productivity-pack@rwang-workbench · analysis-pack@rwang-workbench 3개 enabled 확인. 재설치 직후 `check-orphan-originals.ps1` 재실행도 12 PASS / 0 WARN / 0 FAIL / 2 INFO (exit 0 clean) 유지.
+**Phase 7A — `scripts/check-orphan-originals.ps1` (O-1~O-3)**
+
+- PowerShell 5.1 호환 orphan-originals detector 추가. 검증 항목: O-1 11개 편입 원본 (`hookify`, `claude-code-setup`, `claude-md-management`, `mcp-server-dev`, `playground`, `plugin-dev`, `session-report`, `commit-commands`, `feature-dev`, `pr-review-toolkit`, `security-guidance`)의 user-scope 독립 설치 여부 (generic key enumerate + `scope=='user'` 필터 + `<name>` 정확 일치 or `<name>@*` prefix 일치, 모두 case-sensitive `-ceq`/`-clike`) / O-2 `~/.claude/skills/` orphan (편입 skill 이름 = 디렉토리명 ∪ `SKILL.md` frontmatter `name:` 합집합, 인라인 YAML 코멘트 스트립) / O-3 `known_marketplaces.json` `.source.repo` 필드 조회 (`anthropics/claude-plugins-official`, `anthropics/claude-plugins-public` 기준, INFO only).
+- 실패 분류 (plan §4.1.2): `installed_plugins.json` 부재 = PASS (설치 전무) / parse-failed·unexpected-schema·IO 실패 = FAIL / 매칭 key의 `entries` non-Array = FAIL / entry element malformed(non-object · `scope` 필드 부재·string 아님) = FAIL.
+- Exit code 규칙 (plan §4.1.3): 0=clean / 2=WARN (7B 진행) / 1=FAIL (게이트 블록).
+- 로컬 실행 결과: **12 PASS, 0 WARN, 0 FAIL, 2 INFO (exit 0 clean)**. 11개 원본 모두 user-scope 미설치 확인, `~/.claude/skills/` 부재, `anthropics/claude-plugins-official`만 known (vendoring source이므로 무방).
+- Codex 3-round review: 1차 High 2건 (`plugins` 필드 case-sensitive 타입 체크 강화 + `<name>`/`<name>@*` 매칭을 `-ceq`/`-clike`로 case-sensitive화) + Low 1건 (O-3을 `.source.repo` 필드 매칭으로 교체). 2차 Low 2건 (entry `scope` property case-sensitive lookup + 값 `-ceq`, frontmatter `name:` 파싱 시 인라인 YAML 코멘트 스트립). 3차 No findings.
+- Plan §5 Phase 7 의무 이행의 자동 검증 루틴으로 정착. Phase 8 이후 신규 PC에서도 동일 스크립트 1회 실행으로 검증 가능.
+
+**Phase 7B — skip (clean 상태)**
+
+- 7A exit 0 (0 WARN)으로 plan §4.2 실행 조건 미충족. `claude plugin disable` / `~/.claude/skills/` 제거 작업 없음.
+- Phase 6B B-0에서 확인된 "원본 hookify 부재"가 나머지 10개 원본까지 확장 확인된 상태.
+
+**Phase 7C — 두 팩 최종 재설치**
+
+- `claude plugin install productivity-pack@rwang-workbench` + `analysis-pack@rwang-workbench` 실행 → `claude plugin list`에 3개 enabled (codex + 두 팩) 확인.
+- 재설치 직후 `check-orphan-originals.ps1` 재실행도 12 PASS / 0 WARN / 0 FAIL (exit 0) 유지. 재설치가 편입된 skill 이름과 `~/.claude/skills/` 디렉토리 생성을 유발하지 않음 확인.
+
+**Phase 7D — Closure**
+
+- 본 CHANGELOG Phase 7 블록 확장 (7A/7B skip/7C/7D 통합).
+- `docs/MASTER_PLAN_v1.5.md` §8: `⬜ Phase 7~8` → `✅ Phase 7 완료 (2026-04-25)` + `⬜ Phase 8`.
+- `docs/phase7-plan.md` → `docs/archive/phase7-plan.md` (v6까지 Codex 6회 리뷰 이력 보존: 1차 4건·2차 3건·3차 3건·4차 3건·5차 2건·6차 0건 수렴).
+- `CLAUDE.md` 상태 표 Phase 7 반영 + 다음 액션을 Phase 8 착수로 전환.
 
 ### Phase 6 — 2026-04-24
 
