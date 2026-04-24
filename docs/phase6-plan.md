@@ -7,6 +7,8 @@
 > - 초안 (2026-04-24)
 > - **v2 (2026-04-24): Codex 1차 리뷰 7건 반영 — High 3건(V-3 `license` 추가, V-5 unique plugin set 비교로 교체, Phase 7 진입 gate 대체성 검증 추가) + Low 4건(V-3 확장 후보 명시, PS 5.1 추가 주의, 6B 누락 step 보강, B-5 결과 분리 기록)**
 > - **v3 (2026-04-24): Codex 2차 리뷰 7건 반영 — High 3건(V-1 경로 명시, B-0 hookify 독립 설치 확인 추가, B-2a hook 실제 실행 강화) + Low 4건(V-3 optional 필드 노트, V-5 헤더 제외 파싱 명시, PS 5.1 quirk 3건 추가, B-8 namespace 확인 구체화)**
+> - **v4 (2026-04-24): Codex 3차 리뷰 4건 반영 — High 2건($PSScriptRoot→$RepoRoot 명시, B-2a smoke rule 절차 구체화) + Low 2건(V-5 첫 번째 표 종료 조건, B-0 hookify 결과 CHANGELOG 기록)**
+> - **v5 (2026-04-24): Codex 4차 리뷰 1건 반영 — B-2a smoke rule message 위치 수정(frontmatter 필드 → markdown body)**
 
 ---
 
@@ -100,7 +102,7 @@ FAIL 있으면 exit code 1, 없으면 0.
 
 - **PowerShell 5.1 호환** (Windows PowerShell, not PS 7+)
 - 실행: `powershell -NoProfile -File scripts/validate-plugins.ps1` (리포 루트에서)
-- 경로 기준: `$PSScriptRoot` + `Join-Path` → 절대경로 하드코딩 금지
+- 경로 기준: 스크립트가 `scripts/` 아래이므로 **`$PSScriptRoot`는 `scripts/` 디렉토리**. 반드시 `$RepoRoot = Split-Path -Parent $PSScriptRoot`를 먼저 정의하고, 모든 repo-relative 경로는 `$RepoRoot` 기준으로 작성
 - 검증 실패 시 즉시 종료 말고 **모든 항목 실행 후 일괄 리포트** (fail-fast 아님)
 
 **PowerShell 5.1 주의사항 (Codex Low 반영):**
@@ -123,7 +125,7 @@ FAIL 있으면 exit code 1, 없으면 0.
 
 1. `plugins/` 하위 전체 파일에서 `vendored-from:` 줄을 grep
 2. URL에서 `/plugins/<plugin-name>` 부분을 추출 → **unique plugin name set** 생성
-3. `THIRD_PARTY_NOTICES.md`의 표에서 `|---|` separator 이후 데이터 행만 파싱 (헤더 `| Plugin |` 행 제외) → 첫 번째 컬럼 값 11개 추출 → set 생성
+3. `THIRD_PARTY_NOTICES.md`의 **첫 번째 표만** 파싱 (파일에 표가 2개 있으므로 두 번째 표 Modifications 섹션은 제외). `|---|` separator 이후 ~ 빈 줄 이전까지의 데이터 행에서 첫 번째 컬럼(`Plugin` 값) 11개 추출 → set 생성
 4. 두 set 비교: 양쪽 모두 있으면 PASS, 한쪽에만 있으면 WARN + 차이 목록 출력
 5. 각 vendored URL이 NOTICES Source URL 중 하나로 prefix-match 되는지 추가 확인 (선택)
 
@@ -146,10 +148,10 @@ Phase 3 acceptance에서 수행한 설치 검증을 Phase 5 변경사항 반영 
 
 | # | 단계 | 기대 결과 | blocker? |
 |---|---|---|---|
-| B-0 | 기존 rwang-workbench 마켓플레이스/팩 등록 상태 확인 + 이미 설치된 경우 uninstall/remove 처리. **원본 `hookify` 플러그인 독립 설치 여부 확인** — 설치돼 있으면 hook 실행 결과를 가릴 수 있으므로 비활성화 후 진행 | 클린 상태 확보 (hookify 부재 포함) | Yes |
+| B-0 | 기존 rwang-workbench 마켓플레이스/팩 등록 상태 확인 + 이미 설치된 경우 uninstall/remove 처리. **`/plugin list`에서 원본 `hookify` 독립 설치 여부 확인** — 발견 시 source/marketplace 기록 + uninstall 수행 + CHANGELOG 기록; 없으면 "not found" 기록 | 클린 상태 확보 (hookify 부재 확인 포함) | Yes |
 | B-1 | `/plugin marketplace add D:/claude/rwang-workbench` | 마켓플레이스 등록 성공 | Yes |
 | B-2 | `/plugin install productivity-pack@rwang-workbench` | 설치 성공 | Yes |
-| B-2a | Bash tool 등 **PreToolUse를 유발하는 동작** 수행 → hook 실제 실행 출력/로그 확인. `/hooks`는 보조 진단용. **최소 PreToolUse 또는 PostToolUse hook 1회 실제 실행 성공** (python 실행 + `$CLAUDE_PLUGIN_ROOT` env 치환 동작) | hook 실제 실행 확인 | Yes |
+| B-2a | **임시 smoke rule로 hook 실제 실행 검증**: ①`.claude/hookify.phase6-smoke.local.md` 생성(frontmatter: `name: phase6-hook-smoke`, `event: bash`, `pattern: phase6-hook-smoke`, `action: warn` / **body에** `SMOKE-OK`) → ②Bash tool에서 `echo phase6-hook-smoke` 실행 → ③Claude Code UI에서 `SMOKE-OK` systemMessage 노출 확인 → ④파일 삭제. `/hooks`는 보조 진단용 | `SMOKE-OK` systemMessage 노출 | Yes |
 | B-3 | `/plugin install analysis-pack@rwang-workbench` | 설치 성공 | Yes |
 | B-4 | productivity-pack Skill 1개 트리거 (`/productivity-pack:plugin-structure` 등) | 응답 생성 | Yes |
 | B-4a | analysis-pack Skill 1개 트리거 (`/analysis-pack:playground` 등) | 응답 생성 (두 팩 discovery 검증) | Yes |
@@ -226,3 +228,18 @@ Phase 4/5 마감 패턴 동일.
 | L-2 | Low | V-5 `^\| (\w[\w-]+)` 패턴이 헤더 `\| Plugin \|`도 매칭 → "Plugin" 오탐 | ✅ `\|---|` 이후 데이터 행만 파싱하도록 명시 |
 | L-3 | Low | PS 5.1 표 추가 quirk (Write-Output 오염, Test-Path -PathType, Join-Path 중첩) | ✅ 3건 표에 추가 |
 | L-4 | Low | B-8 "기록만" → namespace 확인 + CHANGELOG 기록 구체화 | ✅ Low gate로 격상, namespace 명시 + CHANGELOG 기록 |
+
+**3차 리뷰 (2026-04-24) — CLOSED. 4건 전수 반영.**
+
+| # | 심각도 | 지적 내용 | 반영 |
+|---|---|---|---|
+| H-1 | High | H-1 부분 반영 — `$PSScriptRoot`가 `scripts/`이므로 `$RepoRoot` 정의 없이 경로 잡으면 오구현 | ✅ `$RepoRoot = Split-Path -Parent $PSScriptRoot` 패턴 명시 |
+| H-2 | High | H-3 부분 반영 — hook stdout 노출 보장 없어 실행 확인 방법 모호 | ✅ smoke rule 4단계 절차 구체화 (생성→trigger→SMOKE-OK 확인→삭제) |
+| L-1 | Low | V-5 파싱 종료 조건 미명시 — THIRD_PARTY_NOTICES.md 표가 2개라 두 번째 표까지 파싱 가능 | ✅ "첫 번째 표만, `\|---|` 이후 ~ 빈 줄 이전" 종료 조건 명시 |
+| L-2 | Low | B-0 hookify 결과 CHANGELOG 기록 미명시 | ✅ 발견/미발견 모두 CHANGELOG 기록하도록 명시 |
+
+**4차 리뷰 (2026-04-24) — CLOSED. 1건 반영.**
+
+| # | 심각도 | 지적 내용 | 반영 |
+|---|---|---|---|
+| H-1 | High | B-2a smoke rule `message: SMOKE-OK`를 frontmatter 필드로 기재 — hookify 파서는 frontmatter `message` 키 미사용, body를 메시지로 사용 | ✅ frontmatter/body 구조 명시 (`action: warn` / body에 `SMOKE-OK`) |
