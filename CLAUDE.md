@@ -10,25 +10,31 @@
 |---|---|---|
 | 1–4 | ✅ 완료 | vendoring + 스캐폴드 + 44 컴포넌트 편입 |
 | **5A** | ✅ 완료 (commit `7ed1575`) | Python hook A1 (`python3`→`python`) + README Prerequisites |
-| **5B** | ✅ 완료 | `/productivity-pack:check-recommended` + fixture 4종 + RECOMMENDED_PLUGINS.md 3항 + 12 cells pass |
-| **5C** | 🔶 **다음 착수 대상** | C-2 Git pre-commit hook G2 pre-step 결정. C-1/C-3/C-4는 drop 확정 |
-| 5D | ⬜ 대기 | 마감 (CHANGELOG + MASTER_PLAN §8 + archive 이관) |
+| **5B** | ✅ 완료 (commit `914befe`) | `/productivity-pack:check-recommended` + fixture 4종 + RECOMMENDED_PLUGINS.md 3항 + 12 cells pass |
+| **5C** | ✅ 완료 | C-2 implement (a+b+d). `scripts/git-hooks/pre-commit` + README. C-1/C-3/C-4 drop 보존. 6 시나리오 전수 pass |
+| **5D** | 🔶 **다음 착수 대상** | 마감 (CHANGELOG + MASTER_PLAN §8 + archive 이관) |
 
-**Working tree**: 5B 커밋 직후 → clean 유지 (5B 내용은 커밋됨).
+**Working tree**: 5C 커밋 직후 → clean 유지.
+
+**Repo-local 훅 활성화 상태**: `core.hooksPath = scripts/git-hooks` 로컬에 설정됨 (이 PC). 다른 PC에서 클론 후 1회 실행 필요.
 
 ---
 
-## 다음 액션 — Batch 5C
+## 다음 액션 — Batch 5D (마감)
 
-**목표**: C-2 (Git pre-commit hook) G2 pre-step 질문지 실행 → rationale 확정 → implement / defer / drop 결정.
+**목표**: Phase 5 마감.
 
-**서브태스크** (phase5-plan.md §3.3):
+**서브태스크** (phase5-plan.md §3.4):
 
-1. 아래 C-2 질문지 Q1–Q4를 사용자에게 제시하고 응답 받기
-2. 응답 바탕으로 결정표 C-2 TBD 해소 (rationale 2–3줄)
-3. G2 승인 요청
-4. implement이면 스펙 확정 → 파일 작성 → 검증 → 자산당 1 커밋
-5. defer / drop이면 결정표만 기록하고 5D로 이행
+1. `docs/CHANGELOG.md` [Unreleased] 아래 Phase 5 블록 추가:
+   - Phase 5A (A1 + README Prerequisites)
+   - Phase 5B (`/productivity-pack:check-recommended` + RECOMMENDED_PLUGINS.md)
+   - Phase 5C (C-2 implement; C-1/C-3/C-4 drop)
+   - Python hook Known Issue 라인을 "Resolved in Phase 5 (A1 + graceful skip)"로 갱신
+   - Accepted Limitations 블록 추가 (Issue #37634, #18527)
+2. `docs/MASTER_PLAN_v1.5.md` §8 상태 라인 추가
+3. `docs/phase5-plan.md` → `docs/archive/phase5-plan.md` 이관
+4. 마감 커밋
 
 ---
 
@@ -90,16 +96,17 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 
 ## 대기 중인 사용자 결정
 
-**C-2 Git pre-commit hook (Batch 5C G2 pre-step 질문지 필요):**
+없음. Phase 5는 5D 마감만 남음.
 
-```
-Q1. 이 자산의 주 사용 빈도는? (매일 / 주 1–2회 / 월 수 회 / 특정 이벤트)
-Q2. 지금 Phase 5에서 구현하면 즉시 개선되는 작업?
-Q3. 연기 시 영향?
-Q4. "불필요" 판정 가능한 이유?
-```
+---
 
-5C 착수 시점에 위 4문항을 사용자에게 제시하고 응답 받아 rationale 작성 → G2 승인 → implement/defer/drop 결정.
+## Pre-commit 훅 운영 노트 (5C 이후)
+
+- 활성화: `git config core.hooksPath scripts/git-hooks` (레포 클론당 1회)
+- 검사: (a) 시크릿 패턴 / (b) 개인 절대경로 `…Users/code1412/…` / (d) vendored `modified: none` 보호
+- 스캔 범위: staged diff의 **added 라인만** — 기존 내용은 retroactive 트리거 없음
+- 우회: `git commit --no-verify` (사유를 커밋 메시지에)
+- 다른 PC에서 쓰려면: 클론 후 `core.hooksPath` 1회 설정 필요 (git config는 레포 로컬이라 자동 배포 안 됨)
 
 ---
 

@@ -309,9 +309,31 @@ Q4. "불필요" 판정 가능한 이유?
 | # | 후보 | 결정 | 대상 Phase | Rationale | 대상 팩 | 예상 파일 | 검증 |
 |---|---|---|---|---|---|---|---|
 | C-1 | `/sync-to-git` | **drop** | — | 사용자 결정 (2026-04-24): 자동 동기화 불필요 | — | — | — |
-| C-2 | Git pre-commit hook | TBD | Phase 5 or 9+ | TBD (G2 pre-step 후) | productivity | TBD | TBD |
+| C-2 | Git pre-commit hook | **implement** | Phase 5 | Q1 답변 "매일" (집↔회사 병행 작업으로 커밋 주기 밀도 높음). 환경 간 차이가 자주 섞여 들어올 구조. 현실적 조합 a+b+d 채택: (a) 시크릿 패턴 + (b) 개인 절대경로 + (d) vendored `modified: none` 보호. 레포 단위 훅, 번들 아님 | (repo-level) | `scripts/git-hooks/pre-commit` + `README.md` | 6 시나리오 전수 pass |
 | C-3 | draw.io MCP 번들 | **drop** | — | 사용자 결정: 팩 번들 X | — | docs 1줄 | 줄 존재 확인 |
 | C-4 | GCP MCP 번들 | **drop** | — | 동일 | — | docs 1줄 | 줄 존재 확인 |
+
+**Batch 5C 실행 기록 (2026-04-24):**
+
+- [x] G2 pre-step Q1–Q4 사용자 응답:
+  - Q1: 매일 (집↔회사 병행 작업)
+  - Q2/Q3/Q4: 불필요 판정 불가, "Claude가 알아서 필터해줬지만 자동화하는 편이 안전"
+- [x] 결정: **implement** (현실적 조합 a+b+d)
+- [x] 스펙 확정:
+  - bash 스크립트 `scripts/git-hooks/pre-commit`
+  - 활성화: `git config core.hooksPath scripts/git-hooks` (레포당 1회)
+  - 우회: `git commit --no-verify`
+  - 스캔 범위: `git diff --cached --unified=0 --diff-filter=AM`의 added 라인만 (기존 내용 retroactive 트리거 없음)
+  - (d)는 modification(M)만 대상, Add(A)는 통과
+- [x] 검증 6 시나리오 전수 pass:
+  1. clean staging → exit 0
+  2. fake AWS key `AKIA...` → 블록
+  3. `C:\Users\<owner>\...` 패턴 staged (실제 테스트는 owner 유저명 사용) → 블록
+  4. vendored `modified: none` 파일 수정 → 블록
+  5. 새 vendored 파일 Add → 통과 (M 아닌 A)
+  6. `--no-verify` 우회 → 정상 커밋
+- [x] 훅 자기-트리거 회피: `PATH_SKIP`에 `scripts/git-hooks/pre-commit` 포함 (시크릿 체크는 예외 없음)
+- [x] README.md 상위에 "Git hooks (optional)" 섹션 추가 + 활성화 one-liner
 
 **MCP 버킷 규칙:**
 
@@ -386,7 +408,7 @@ Q4. "불필요" 판정 가능한 이유?
 ### 6.1 Phase 5 자체
 - [x] Batch 5A (2026-04-24) — A-Win·A-POSIX 런타임 직접 검증은 환경 제약으로 보류, graceful skip 실제 작동 확인됨. §3.1.1 표 완성, README Prerequisites 섹션(플랫폼 한계 고지 포함), vendored 7개 파일 `modified: none` 유지. Exit 조건 문서상 요건은 충족, 실환경 Python 3 설치 후 확인은 후속
 - [x] Batch 5B (2026-04-24) — 12 cells 전수 pass (Git Bash + PowerShell 5.1 + production + fallback), Cell 11 md5 무변화 (`64819c38…a79e` before == after), Cell 12 `import.meta.url` fallback 정상 동작, command doc env override 서브섹션 포함, RECOMMENDED_PLUGINS.md 3항 반영(초기 설치 one-liner + `/check-recommended` 안내 + MCP 서브섹션)
-- [ ] Batch 5C — 결정표 C-2 결정 + rationale, drop 3건 보존, implement 시 구현·검증
+- [x] Batch 5C (2026-04-24) — C-2 implement (현실적 조합 a+b+d), C-1/C-3/C-4 drop 보존. `scripts/git-hooks/pre-commit` + README "Git hooks (optional)" 섹션. 6 시나리오 전수 pass (clean/secret/path/vendored-M/vendored-A/--no-verify)
 - [ ] 모든 신규 파일에 개인정보·절대경로 0건
 
 ### 6.2 §4.6 v0.1 충족
@@ -492,13 +514,14 @@ v6는 Anthropic 공식 방침 준수를 상위 원칙으로 채택. Codex 추가
 
 ## 9. 실행 현황
 
-**현재 상태 (2026-04-24)**: G1 승인. **Batch 5A·5B 완료**. 5C 대기 (C-2 G2 pre-step 질문지).
+**현재 상태 (2026-04-24)**: G1·G2 승인. **Batch 5A·5B·5C 완료**. 5D 대기.
 
 **진행:**
 - [x] G1 승인 (2026-04-24)
 - [x] Batch 5A (2026-04-24) — commit `Phase 5A: Python hook cross-platform fix (A1) + README Prerequisites`
 - [x] Batch 5B (2026-04-24) — `scripts/check-recommended.mjs` + `commands/check-recommended.md` + fixture 4종 + RECOMMENDED_PLUGINS.md 3항 + 12 cells 전수 pass
-- [ ] Batch 5C — C-2 G2 pre-step 질문지 → 결정 → 필요 시 구현
+- [x] G2 승인 (2026-04-24) — C-2 implement 결정 (현실적 조합 a+b+d)
+- [x] Batch 5C (2026-04-24) — `scripts/git-hooks/pre-commit` + README "Git hooks (optional)" 섹션 + 6 시나리오 전수 pass. C-1/C-3/C-4 drop 보존
 - [ ] Batch 5D — 마감 (CHANGELOG Phase 5 블록 + MASTER_PLAN §8 업데이트 + archive 이관)
 
-**다음 액션:** Batch 5C 착수. CLAUDE.md의 C-2 질문지(Q1–Q4)를 사용자에게 제시하고 응답 받아 rationale 작성 → G2 승인 → implement / defer / drop 결정.
+**다음 액션:** Batch 5D 착수. `docs/CHANGELOG.md` Unreleased 아래 Phase 5 블록 + Known Issue 갱신 + Accepted Limitations 블록, `docs/MASTER_PLAN_v1.5.md` §8 상태 라인, 본 문서 `docs/archive/` 이관.

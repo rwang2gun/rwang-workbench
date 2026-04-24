@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# rwang-workbench pre-commit hook
+# (a) secret patterns  (b) personal absolute paths  (d) vendored file protection
+#
+# Activate per-clone: git config core.hooksPath scripts/git-hooks
+# Bypass (emergency): git commit --no-verify  — note the reason in the commit message.
+
+set -u
+
+RED=$'\033[31m'
+CYAN=$'\033[36m'
+RESET=$'\033[0m'
+if [ ! -t 2 ]; then RED=''; CYAN=''; RESET=''; fi
+
+fail=0
+report() { printf '%s✗%s %s\n' "$RED" "$RESET" "$1" >&2; }
+info()   { printf '%s·%s %s\n' "$CYAN" "$RESET" "$1" >&2; }
+
+# ---------- Patterns ----------
+SECRET_PATTERNS=(
+  'AKIA[0-9A-Z]{16}'
+  'gh[pousr]_[A-Za-z0-9]{36,}'
+  'sk-ant-[A-Za-z0-9_-]{20,}'
+  '-----BEGIN (RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----'
+  '(api[_-]?key|token|secret|passwd|password)[[:space:]]*[:=][[:space:]]*["'"'"'][^"'"'"'[:space:]]{16,}["'"'"']'
+)
+PATH_PATTERNS=(
+  'C:[\\/]Users[\\/]code1412'
+  '/c/Users/code1412'
+)
+# Files exempt from the path scan (the hook file legitimately contains its own patterns).
+# Secrets are NOT exempt; leaking secrets via this file would still be blocked.
+PATH_SKIP=(
+  'scripts/git-hooks/pre-commit'
+)
+
+is_path_skip() {
+  local f="$1" s
+  for s in "${PATH_SKIP[@]}"; do
+    [ "$f" = "$s" ] && return 0
+  done
+  return 1
+}
+
+# ---------- (a)(b) Per-file added-line scan ----------
+while IFS= read -r file; do
+  [ -n "$file" ] || continue
+  added=$(git diff --cached --unified=0 --diff-filter=AM -- "$file" 2>/dev/null \
+          | grep -E '^\+' | grep -v '^+++' || true)
+  [ -z "$added" ] && continue
+
+  for pat in "${SECRET_PATTERNS[@]}"; do
+    hits=$(printf '%s\n' "$added" | grep -E -- "$pat" | head -3 || true)
+    if [ -n "$hits" ]; then
+      report "시크릿 패턴 감지 — $file — /$pat/"
+      printf '%s\n' "$hits" | sed 's/^/    /' >&2
+      fail=1
+    fi
+  done
+
+  if ! is_path_skip "$file"; then
+    for pat in "${PATH_PATTERNS[@]}"; do
+      hits=$(printf '%s\n' "$added" | grep -E -- "$pat" | head -3 || true)
+      if [ -n "$hits" ]; then
+        report "개인 절대경로 — $file — /$pat/"
+        printf '%s\n' "$hits" | sed 's/^/    /' >&2
+        fail=1
+      fi
+    done
+  fi
+done < <(git diff --cached --name-only --diff-filter=AM)
+
+# ---------- (d) Vendored file `modified: none` protection ----------
+# Block Modifications (not Adds) to files that still carry the marker.
+while IFS= read -r f; do
+  [ -n "$f" ] || continue
+  [ -f "$f" ] || continue
+  header=$(head -n 30 "$f" 2>/dev/null || true)
+  if printf '%s' "$header" | grep -q 'vendored-from:' \
+     && printf '%s' "$header" | grep -Eq '^[^A-Za-z0-9]*modified:[[:space:]]*none[[:space:]]*$'; then
+    report "vendored 파일 수정 (modified: none 보호): $f"
+    info "   헤더를 'modified: minor' 또는 'modified: major'로 먼저 갱신한 뒤 편집하거나, upstream 원본을 유지하세요."
+    fail=1
+  fi
+done < <(git diff --cached --name-only --diff-filter=M)
+
+if [ "$fail" -eq 1 ]; then
+  printf '\n%sPre-commit check failed.%s\n' "$RED" "$RESET" >&2
+  printf '   긴급시 우회: git commit --no-verify (사유를 커밋 메시지에 남길 것)\n' >&2
+  exit 1
+fi
+
+exit 0
