@@ -5,10 +5,13 @@
 > **근거**: MASTER_PLAN v1.5 §5 Phase 5, §4.6 (v0.1 구현), §3.5 (Source Lock), [docs/CHANGELOG.md Unreleased](./CHANGELOG.md) (Python hook known-issue 이월), [phase4-plan.md §4 Risk #4](archive/phase4-plan.md).
 > **개정 이력**:
 > - 초안 (2026-04-23)
-> - v1 (2026-04-23): Codex 1차 리뷰 9건 반영 (MAJOR 6 / MINOR 3)
-> - v2 (2026-04-23): Codex 2차 리뷰 7건 반영 — Python fix를 A2 inline wrapper로 승급 등
-> - v3 (2026-04-23): Codex 3차 리뷰 반영 — round 2 PARTIAL 4건 해소 + 신규 5건(V2-1~V2-5). 주요 변경: **A2에서 A1으로 회귀** (shell 가정 제거), README PREREQUISITES 신설, CHANGELOG 경로 정정, command doc env override 문서화 필수화, 5C G2 pre-step 질문 프로토콜 명시, fixture 구성 구체화.
-> - v3.1 (2026-04-23): Codex 4차 리뷰 APPROVE with minor edits 반영 — §3.2에 MASTER §4.6.2 확장 문구, §3.3에 5C Sub-task 0 (질문지 실행 의무), README Prerequisites 배치 앵커("before `## Install`"), CHANGELOG line 18 기준 → "기존 Known issue 라인"으로 완화.
+> - v1 (2026-04-23): Codex 1차 9건 반영
+> - v2 (2026-04-23): Codex 2차 7건 반영 — A2 inline wrapper 시도
+> - v3 (2026-04-23): Codex 3차 5건 반영 — A1 회귀, README PREREQUISITES 신설
+> - v3.1 (2026-04-23): Codex 4차 4건 반영 — APPROVE with minor edits
+> - v4 (2026-04-24): Codex 5차 3 High 반영 — A3 Node 런처 승급, C-1/C-3/C-4 drop
+> - v5 (2026-04-24): Codex 6차 3건 반영 — A안 강화 (launch-python.mjs + install-check.mjs + plugin.json precondition 조사)
+> - **v6 (2026-04-24): Codex 7차 + Claude Code 플랫폼 조사 결과 반영. A3 → A1 회귀. `launch-python.mjs` / `install-check.mjs` / plugin.json precondition 조사 sub-task 전부 폐기. "플랫폼 한계 수용"으로 설계 단순화. 근거: Claude Code 자체가 크로스 플랫폼 훅 실행을 미완전 지원(Issue #37634, #18527), `shell:` 옵션·plugin.json `prerequisites` 필드 공식 스키마 미정의. hookify 원본의 ImportError graceful exit 0 패턴이 공식 설계 철학. Anthropic 공식 방침 준수를 Codex 완벽주의 권고보다 우선.**
 
 ---
 
@@ -18,18 +21,26 @@
 
 | 스트림 | 범위 | 출처 |
 |---|---|---|
-| **A** | Phase 4 이월: Python hook 크로스 플랫폼 수정(A1) + README PREREQUISITES 신설 | Phase 4 Risk #4, §6.5 error 3건 |
-| **B** | §4.6 v0.1: `/productivity-pack:check-recommended` 명령어 + `docs/RECOMMENDED_PLUGINS.md` 보강 + command doc env override 문서화 | MASTER_PLAN §4.6 |
-| **C** | 본인 자산 신규 작성 (4개 후보 + G2 pre-step 질문 프로토콜) | MASTER_PLAN §5 Phase 5 |
+| **A** | Phase 4 이월: `hooks.json` 5개 command `python3` → `python` 단순 치환(A1) + `README.md` Prerequisites 섹션 신설 + 플랫폼 한계 투명 문서화 | Phase 4 Risk #4, §6.5 error 3건 |
+| **B** | §4.6 v0.1: `/productivity-pack:check-recommended` 명령어 + `docs/RECOMMENDED_PLUGINS.md` 보강 + command doc env override 문서화 + MCP 서버 추천 서브섹션 + production path 검증 | MASTER_PLAN §4.6 + Codex 6차 M2 |
+| **C** | 본인 자산 신규 작성 (C-2만 생존; C-1/C-3/C-4 drop) | MASTER_PLAN §5 Phase 5 |
 | **D** | 마감: docs/CHANGELOG.md [Unreleased] Phase 5 블록, MASTER_PLAN §8 상태, 본 문서 `docs/archive/`로 이관 | Phase 4 마감 패턴 |
 
-**범위 외:** `validate-plugins.ps1` (Phase 6), game-design-pack skill (유예), Skills ZIP (배포 후).
+**범위 외:**
+- `validate-plugins.ps1` (Phase 6)
+- game-design-pack skill (유예)
+- Skills ZIP (배포 후)
+- `/sync-to-git`, draw.io MCP 번들, GCP MCP 번들 (사용자 drop)
+- `hooks/*.py` · `core/*.py` 재작성 (vendored 보존 — F안 배제)
+- **`hooks/launch-python.mjs` (v5 폐기 — 플랫폼 한계 수용)**
+- **`scripts/install-check.mjs` (v5 폐기 — 플랫폼 한계 수용)**
+- **plugin.json precondition 선언 (Claude Code 미지원 확정)**
 
 ---
 
 ## 1. Ordering Rationale
 
-**A → B → C → D 순서 고정**. (A: 노이즈 해소 우선 / B: 스펙 명확 / C: 가장 유동적 / D: 자동)
+**A → B → C → D 순서 고정**.
 
 ---
 
@@ -37,102 +48,148 @@
 
 | 배치 | 내용 | 커밋 단위 |
 |---|---|---|
-| **Batch 5A** | `hooks.json` 5개 command + 7개 shebang `python3`→`python` (A1), §3.1.1 inline source-lock 표, `README.md` PREREQUISITES 섹션 신설, 로컬 재검증 | 1 커밋 |
-| **Batch 5B** | `plugins/productivity-pack/scripts/check-recommended.mjs`, `commands/check-recommended.md`(env override 문서 포함), `docs/RECOMMENDED_PLUGINS.md` 보강, 10 cells 검증 | 1 커밋 |
-| **Batch 5C** | G2 pre-step 질문 → 결정표 확정 → implement 자산 구현 | 결정표 + 자산당 1 커밋 |
-| **Batch 5D** | `docs/CHANGELOG.md` [Unreleased] Phase 5 블록 + Known Issue 갱신, MASTER_PLAN §8, 본 문서 archive 이관 | 1 커밋 |
+| **Batch 5A** | `hooks.json` 5개 `command` 필드 `python3` → `python` 단순 치환 + `hooks/*.py`·`core/*.py` shebang **무변경**(vendored 보존) + §3.1.1 source-lock 표 + `README.md` Prerequisites 섹션 + 플랫폼 한계 투명 문서화 + A-Win / A-POSIX 런타임 검증 | 1 커밋 |
+| **Batch 5B** | `scripts/check-recommended.mjs` + `commands/check-recommended.md`(env override 포함) + `docs/RECOMMENDED_PLUGINS.md` 보강(MCP 서브섹션 포함) + 12 cells 검증(fixture 10 + production 2) | 1 커밋 |
+| **Batch 5C** | G2 pre-step 질문(C-2만 남음) → 결정표 확정 → implement 시 자산 구현 | 결정표 + 자산당 1 커밋 |
+| **Batch 5D** | `docs/CHANGELOG.md` [Unreleased] Phase 5 블록 + Known Issue 갱신 + 플랫폼 한계 기록, MASTER_PLAN §8, 본 문서 archive 이관 | 1 커밋 |
 
 **승인 지점:**
-- **G1** — Plan 최종 완성 (Codex 리뷰 모두 소화된 시점)
-- **G2** — 5C 결정표 작성 완료 (**mandatory**)
-- Batch 5A·5B·5D는 G1 후 자동
+- **G1** — Plan 최종 완성
+- **G2** — 5C 결정표 작성 완료 (**mandatory**; C-2 1건만 TBD 해소)
 
 **Codex 리뷰 게이트:**
-- 1차(초안) → v1 / 2차(v1) → v2 / 3차(v2) → v3 — 모두 CLOSED 시 G1
-- 4차(5C 결정표 완성 시) — **mandatory**
-- 배치 구현 리뷰는 per-asset optional
+- 1~7차 CLOSED.
+- **8차 (v6 재확인) — optional**: 본 문서는 Anthropic 공식 방침 준수를 상위 원칙으로 채택했으므로 Codex 추가 지적은 informational 참고로 처리. blocker 아님.
+- **9차 (C-2 결정 후 축약) — optional**: 동일 원칙.
+- 배치 구현 리뷰는 per-asset optional.
 
 ---
 
 ## 3. 배치별 세부
 
-### 3.1 Batch 5A — Python hook 크로스 플랫폼 수정
+### 3.1 Batch 5A — Python hook 크로스 플랫폼 수정 (A1 + 플랫폼 한계 수용)
 
 **영향 범위:**
 
-| 파일 | `python3` 언급 유형 |
-|---|---|
-| `plugins/productivity-pack/hooks/hooks.json` | 5개 `command` 필드 — **런타임 실제 호출** |
-| `plugins/productivity-pack/hooks/*.py` × 5 | shebang — consistency-only (hooks.json이 인터프리터 지정) |
-| `plugins/productivity-pack/core/*.py` × 2 | shebang — consistency-only |
-| `commands/help.md`, `commands/hookify.md`, `skills/writing-rules/SKILL.md` | 사용자 문서 예시 — **수정 불필요** |
+| 파일 | 역할 | vendored 상태 |
+|---|---|---|
+| `plugins/productivity-pack/hooks/hooks.json` | 5개 `command` 필드 `python3 ...` → `python ...` 단순 치환 | minor (command 필드만) |
+| `plugins/productivity-pack/hooks/*.py` × 5 | **무변경** | `modified: none` |
+| `plugins/productivity-pack/core/*.py` × 2 | **무변경** | `modified: none` |
+| `plugins/productivity-pack/README.md` | Prerequisites 섹션 신설 + 플랫폼 한계 투명 문서화 | minor |
 
-**채택: A1 (`python3` → `python` 단순 치환)** (Codex 3차 V2-2 반영 — A2 inline wrapper의 shell 가정 리스크 회피)
+**채택: A1 (`python3` → `python` 단순 치환) + 플랫폼 한계 투명 수용**
 
-근거:
-- hooks.json `command` 필드는 Claude Code hook runner가 어떤 셸로 해석하는지 문서화되어 있지 않음 → A2 inline `sh -c` 구문은 **검증되지 않은 가정**에 의존
-- A1은 셸과 무관하게 단일 토큰 교체 → 알려진 제약(POSIX `python` 미존재 시 실패)만 보유
-- 알려진 제약은 **README PREREQUISITES로 이전**해 투명화 (Codex 3차 V2-5 반영)
-- POSIX `python` 미존재 환경에서 실패 시 대응은 Phase 9 pain report 기반 wrapper-file 방식 승급
+선행 방안들의 사망 기록:
 
-**베이스라인 (새 README PREREQUISITES 섹션 — Sub-task 5에서 작성):**
+| 방안 | 사망 원인 | 근거 |
+|---|---|---|
+| A1 v3 | POSIX baseline 축소 ("이건 fix가 아니라 이전") | Codex 5차 H1 |
+| A2 v2 | Windows `bash`가 WSL 스텁으로 해석되는 미해결 버그 + `shell:` 공식 스키마 미정의 | Claude Code Issue [#37634](https://github.com/anthropics/claude-code/issues/37634), [#18527](https://github.com/anthropics/claude-code/issues/18527); claude-code-guide 조사 (2026-04-24) |
+| A3 v4·v5 | Node 없으면 훅 조용한 실패 + `install-check.mjs` 자기모순(Node로 Node 체크) | Codex 6·7차 H1 |
+| Option 3 (`.py` 경로만) | 공식 미지원, Windows py launcher가 hook runner spawn에 자동 개입 안 함 | claude-code-guide 조사 (2026-04-24) |
+| F (Node 재작성) | Node 의존성 여전 + vendored 단절 → upstream 자동 머지 불가 | 이전 분석 |
 
-- **Python**: `python` 명령이 Python 3.x를 가리켜야 함
-  - Windows: 공식 Python installer로 설치하면 기본 충족 (`python`이 python3)
-  - macOS (Homebrew `python@3.x`): 기본 충족 (`python` symlink)
-  - Ubuntu 22.04+: `sudo apt install python-is-python3` 또는 수동 symlink
-  - Ubuntu 20.04 이하 / 기타 `python` = python2 환경: Phase 5 범위 외 (Phase 9 wrapper 승급 후보)
-- **Shell**: hook 실행을 위한 특수 shell 요구 없음 (A1은 단일 바이너리 호출)
+**A1 재채택 근거 (v6):**
+
+1. **Claude Code 자체가 크로스 플랫폼 훅 실행을 미완전 지원**:
+   - `shell:` 옵션·`plugin.json` precondition 공식 스키마 부재
+   - Windows `bash` 해석 버그 (#37634)
+   - 공식 플러그인 크로스 플랫폼 패턴 부재
+2. **hookify 원본의 공식 설계 철학**: ImportError 발생 시 **graceful exit 0** 패턴이 `pretooluse.py:22-29`에 이미 존재. "훅 실행 실패 시 조용한 스킵 + 메인 동작 지속"이 Anthropic 공식 수용 모델
+3. **Anthropic 공식 방침 준수 > Codex 완벽주의**: 플랫폼이 제공하지 않는 우회책을 자체 개발하는 것보다, 공식 패턴을 따르고 한계를 투명 문서화하는 것이 **장기 사후 비용 최소화**
+4. **Phase 9 경로 열림**: Claude Code upstream 개선(Issue #37634 해결 등) 이후 Phase 9에서 재평가 가능
+
+**`hooks.json` 변경:**
+
+```jsonc
+// before
+{ "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse.py" }
+// after
+{ "command": "python ${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse.py" }
+```
+
+5개 command 동일 패턴.
+
+**README Prerequisites 섹션 (5A-3, `## Install` **직전** 배치):**
+
+```
+## Prerequisites
+
+### Python 3.x on PATH as `python`
+
+이 플러그인의 훅은 `python` 명령이 Python 3.x를 가리킨다고 가정합니다.
+
+**OS별 상태:**
+- **Windows** (공식 Python installer): 기본 충족 (`python` = Python 3).
+- **macOS** (Homebrew `python@3.x` 또는 Xcode): 기본 충족.
+- **Ubuntu 22.04+ / 최신 Linux**: `python3`은 있으나 `python` symlink는 선택적. `sudo apt install python-is-python3` 1회 권장.
+- **Ubuntu 20.04 이하 / `python` = Python 2 환경**: 훅이 Python 2로 실행되면 ImportError 발생 → hookify 원본의 graceful skip 로직(`pretooluse.py:22-29`)으로 **조용히 스킵**. 메인 Claude Code 동작은 손상되지 않으나 훅 기능(보안 규칙 엔진 등)은 비활성 상태.
+
+### 플랫폼 한계 투명 고지
+
+Claude Code는 현재 크로스 플랫폼 훅 실행을 미완전 지원합니다:
+- Windows native installer에서 `bash` 훅이 WSL 스텁으로 해석되는 미해결 버그: Claude Code Issue #37634, #18527
+- `plugin.json` 시스템 prerequisite 필드·`shell:` 옵션 공식 스키마 미정의
+
+본 플러그인은 위 제약 안에서 **Anthropic hookify 원본 설계 철학(graceful skip)**을 그대로 따릅니다. Phase 9에서 upstream 개선 후 재평가 예정.
+
+### 수동 확인 (선택)
+
+설치 후 Python 버전 확인:
+- Git Bash: `python --version`
+- PowerShell: `python --version`
+
+Python 3.x가 표시되지 않으면 OS별 가이드에 따라 조치.
+```
 
 **Sub-task:**
-1. `hooks.json` 5개 `command` 필드 `python3 ${...}` → `python ${...}` 단순 치환
-2. 5개 `hooks/*.py` shebang `python3` → `python` (consistency, 런타임 영향 없음)
-3. 2개 `core/*.py` shebang 동일 처리
-4. §3.1.1 inline source-lock 표 12행 채움 (아래)
-5. **`README.md`에 `## Prerequisites` 섹션 신설** (Codex 3차 V2-5 반영, 4차 #3 배치 명시):
-   - **배치 위치**: `## Install` 섹션 **직전**
-   - Python 3.x on PATH as `python`
-   - OS별 확인 명령
-   - POSIX `python-is-python3` 설치 안내
-6. 각 영향 파일 vendoring 헤더 `modified: none` → `modified: minor`
-7. **검증 분리:**
-   - **경로 A (런타임)**: Claude Code 재기동 + `/reload-plugins` → skill 트리거 → transcript grep `hook error: Python` 0건
-   - **경로 B (직접 호출)**: hooks의 `.py`를 직접 호출하는 use case 없음 확인 → shebang 변경은 consistency-only로 §3.1.1 명기
-8. 배치 커밋
+1. `hooks.json` 5개 `command` 필드 `python3` → `python` 치환
+2. `hooks/*.py` · `core/*.py` shebang **무변경** (vendored `modified: none` 보존)
+3. `README.md`에 `## Prerequisites` 섹션 신설 (`## Install` 직전)
+4. `hooks.json` vendoring 헤더 `modified: none` → `modified: minor` (command 필드만)
+5. §3.1.1 inline source-lock 표 채움
+6. **검증:**
+   - **경로 A-Win (런타임)**: Windows + 공식 Python installer → skill 트리거 → transcript `hook error` 0건
+   - **경로 A-POSIX (런타임)**: macOS 또는 Ubuntu 22.04+ (`python-is-python3` 설치 후) 동일 검증
+   - **경로 A-POSIX-구식 (문서 검증만, 런타임 테스트 선택)**: Ubuntu 20.04 이하 시뮬레이션 시 graceful skip 동작 확인. 범위 외로 취급 — README에 한계 고지 있음
+7. 배치 커밋
 
-**Exit:** 경로 A에서 Python hook error 3종 0건.
+**Exit:** Windows + 최신 POSIX 환경에서 Python hook error 0건. README Prerequisites 섹션 존재 + 플랫폼 한계 고지 존재. vendored 7개 파일 `modified: none` 유지 확인.
 
 ---
 
 #### 3.1.1 Phase 5 Source-Lock Appendix (작성 대기)
 
-Batch 5A 진행 시 채움. phase4-source-lock.md는 read-only 유지 (Codex 2차 N2).
+Batch 5A 진행 시 채움. `phase4-source-lock.md`는 read-only 유지.
 
 | # | 파일 (:라인) | Before | After | 사유 | 런타임 영향 |
 |---|---|---|---|---|---|
-| 1 | `hooks/hooks.json:9` command | `python3 ${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse.py` | `python ${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse.py` | Phase 4 Risk #4 fix | ✅ |
+| 1 | `hooks/hooks.json:9` command | `python3 ${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse.py` | `python ${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse.py` | A1 (Phase 4 Risk #4 fix) | ✅ |
 | 2 | `hooks/hooks.json:18` command | `python3 ${...}/hooks/security_reminder_hook.py` | `python ${...}/hooks/security_reminder_hook.py` | 동일 | ✅ |
 | 3 | `hooks/hooks.json:29` command | `python3 ${...}/hooks/posttooluse.py` | `python ${...}/hooks/posttooluse.py` | 동일 | ✅ |
 | 4 | `hooks/hooks.json:40` command | `python3 ${...}/hooks/stop.py` | `python ${...}/hooks/stop.py` | 동일 | ✅ |
 | 5 | `hooks/hooks.json:51` command | `python3 ${...}/hooks/userpromptsubmit.py` | `python ${...}/hooks/userpromptsubmit.py` | 동일 | ✅ |
-| 6 | `hooks/pretooluse.py:1` shebang | `#!/usr/bin/env python3` | `#!/usr/bin/env python` | consistency | ❌ |
-| 7 | `hooks/security_reminder_hook.py:1` shebang | ↑ | ↑ | consistency | ❌ |
-| 8 | `hooks/posttooluse.py:1` shebang | ↑ | ↑ | consistency | ❌ |
-| 9 | `hooks/stop.py:1` shebang | ↑ | ↑ | consistency | ❌ |
-| 10 | `hooks/userpromptsubmit.py:1` shebang | ↑ | ↑ | consistency | ❌ |
-| 11 | `core/config_loader.py:1` shebang | ↑ | ↑ | consistency | ❌ |
-| 12 | `core/rule_engine.py:1` shebang | ↑ | ↑ | consistency | ❌ |
+| 6 | `hooks/pretooluse.py:1` shebang | `#!/usr/bin/env python3` | (무변경) | vendored 보존 | ❌ |
+| 7–12 | 나머지 `hooks/*.py` · `core/*.py` shebang | ↑ | (무변경) | vendored 보존 | ❌ |
+| 13 | `README.md` Prerequisites 섹션 | 부재 | 신설 (`## Install` 직전, 플랫폼 한계 고지 포함) | 플랫폼 한계 투명화 | ❌ |
 
-**정책:** 본 appendix는 Batch 5A 커밋과 함께 확정. Phase 9 upstream 업데이트 시 Phase 5 변경의 단일 출처.
+**정책:** 본 appendix는 Batch 5A 커밋과 함께 확정. vendored 파일 전수 `modified: none` 유지 (Phase 9 upstream 자동 머지 경로 보존). `hooks.json`만 `modified: minor`.
 
 ---
 
 ### 3.2 Batch 5B — §4.6 v0.1 구현
 
 **산출물:**
-- `plugins/productivity-pack/scripts/check-recommended.mjs` (신규 — pack-scoped `scripts/` 하위)
-- `plugins/productivity-pack/commands/check-recommended.md` (신규 — Claude 지시 + **env override 문서 포함**, Codex 3차 V2-4 반영)
-- `docs/RECOMMENDED_PLUGINS.md` 보강
+- `plugins/productivity-pack/scripts/check-recommended.mjs` (신규)
+- `plugins/productivity-pack/commands/check-recommended.md` (신규 — env override 서브섹션 포함)
+- `docs/RECOMMENDED_PLUGINS.md` 보강 (초기 설치 + 명령어 + MCP 서브섹션)
+
+**Node 의존성 범위 제한 (v6 명시):**
+
+`check-recommended.mjs`는 **수동 실행 명령어 경로**이므로 Node 없으면 사용자가 즉시 알 수 있음(`/productivity-pack:check-recommended` 실행 시 에러). 훅 자동 실행 경로와 달라 Codex 6·7차 H1이 가리킨 "조용한 실패" 위험이 없음. 따라서 Node는 5B 선에서만 optional prerequisite로 유지.
+
+README Prerequisites 섹션의 플랫폼 한계 고지에도 이 구분을 명시.
 
 **스크립트 설계 (env 오버라이드):**
 
@@ -144,11 +201,11 @@ const INSTALL_LIST = process.env.RWANG_INSTALLED_PLUGINS_PATH
 - Production: env 미설정 → 기본 경로 (§4.6.2 default)
 - 검증: env 설정 → fixture 경로. **실 installed_plugins.json mutation 금지**
 
-> **MASTER §4.6.2와 관계 (Codex 4차 #1 반영):** `RWANG_INSTALLED_PLUGINS_PATH` 오버라이드는 MASTER_PLAN v1.5 §4.6.2 reference implementation의 **Phase 5 testability 확장**. MASTER 본문은 reference-only로 유지 (기본 경로 하드코딩된 형태 보존). Phase 5 구현은 여기 env 분기를 얹음. Phase 9 pain report 있을 때 MASTER에 역반영 여부 재평가.
+> **MASTER §4.6.2와 관계:** `RWANG_INSTALLED_PLUGINS_PATH` 오버라이드는 §4.6.2 reference implementation의 Phase 5 testability 확장.
 
-**command doc 필수 섹션 (Codex 3차 V2-4):**
+**command doc 필수 섹션:**
 
-`commands/check-recommended.md`에 다음 하위 섹션 **반드시 포함**:
+`commands/check-recommended.md`에 다음 서브섹션 **반드시 포함**:
 
 ```
 ## 환경변수 오버라이드 (INSTALLED_PLUGINS_PATH)
@@ -163,21 +220,16 @@ env 설정 시 실제 설치 목록은 읽지 않음.
 ```
 
 **동작 흐름 (§4.6.2 기반):**
-1. `${CLAUDE_PLUGIN_ROOT}` 기준 상위 탐색, `marketplace.json` 읽기
-2. 팩별 `recommends.json` 읽기 (누락 허용)
-3. `INSTALL_LIST` 파싱 → 설치 plugin 키 추출
-4. 팩 × 권장 × 설치 여부 표 출력
-5. 실패(`file-missing/parse-failed/unexpected-schema`) non-blocking 경고
+1. `${CLAUDE_PLUGIN_ROOT}` 기준 상위 탐색 (미존재 시 `import.meta.url` fallback)
+2. `marketplace.json` 읽기
+3. 팩별 `recommends.json` 읽기 (누락 허용)
+4. `INSTALL_LIST` 파싱 → 설치 plugin 키 추출
+5. 팩 × 권장 × 설치 여부 표 출력
+6. 실패(`file-missing/parse-failed/unexpected-schema`) non-blocking 경고
 
-**검증 매트릭스 (fixture 기반, Codex 3차 V2-3 반영):**
+**검증 매트릭스 (12 cells — Codex 6차 M2 유지):**
 
-**사전 준비:** `plugins/productivity-pack/scripts/__tests__/` 아래 **4개 실 JSON 파일**:
-- `installed-codex.json` — codex 엔트리 존재
-- `installed-no-codex.json` — codex 없는 정상
-- `bad-json.json` — `{bad json` (parse 실패 유발)
-- `unexpected-schema.json` — `{"plugins": []}` (array로 스키마 위반)
-
-**file-missing 케이스:** fixture 파일 **생성하지 않음**. env를 의도적으로 존재하지 않는 경로 문자열(`scripts/__tests__/does-not-exist.json`)로 설정해서 트리거.
+**Fixture (Cells 1–10 — env override):**
 
 | # | Fixture / env 값 | 기대 출력 | Git Bash | PowerShell 5.1 |
 |---|---|---|---|---|
@@ -187,120 +239,102 @@ env 설정 시 실제 설치 목록은 읽지 않음.
 | 4 | `bad-json.json` | `💡 ... (사유: parse-failed)` | 필수 | 필수 |
 | 5 | `unexpected-schema.json` | `💡 ... (사유: unexpected-schema)` | 필수 | 필수 |
 
-총 **10 cells** 전부 통과. 실 `~/.claude/plugins/installed_plugins.json`은 **read도 안 함**.
+**Production path (Cells 11–12 — M2 해소):**
+
+| # | 조건 | 기대 동작 | 검증 방법 |
+|---|---|---|---|
+| 11 | env 미설정 + 실 `~/.claude/plugins/installed_plugins.json` 존재 | 기본 경로 resolve · **read-only** · 정상 표. 파일 mutation 0건 | 실행 전후 `md5sum`/`Get-FileHash` 비교 |
+| 12 | env 미설정 + `CLAUDE_PLUGIN_ROOT` 제거 | `import.meta.url` fallback · 정상 동작 | `unset CLAUDE_PLUGIN_ROOT` 후 실행 |
+
+총 **12 cells** 전부 통과. 실 `installed_plugins.json` mutation 0건.
 
 **docs/RECOMMENDED_PLUGINS.md 보강:**
 - [ ] 초기 설치 one-liner
 - [ ] `/productivity-pack:check-recommended` 명령어 언급
+- [ ] **MCP 서버 추천 서브섹션**: draw.io MCP / GCP MCP 팩 번들 X, "필요 시 Claude에게 설치 요청" 1~2줄
 
 **Sub-task:**
-1. `scripts/check-recommended.mjs` 작성 (ESM, env override 포함)
-2. `commands/check-recommended.md` 작성 (Claude 지시 + **env override 서브섹션 의무**)
+1. `scripts/check-recommended.mjs` 작성 (ESM, env override + `import.meta.url` fallback)
+2. `commands/check-recommended.md` 작성 (env override 서브섹션 의무)
 3. `scripts/__tests__/` 4개 fixture JSON 작성
-4. `docs/RECOMMENDED_PLUGINS.md` 보강 2항 반영
-5. 10 cells 매트릭스 검증
+4. `docs/RECOMMENDED_PLUGINS.md` 보강 3항 반영
+5. 12 cells 매트릭스 검증 (fixture 10 + production 2)
 6. 배치 커밋
 
-**Exit:** 10 cells 전수 pass + command doc env override 서브섹션 존재 확인.
+**Exit:** 12 cells 전수 pass + command doc env override 서브섹션 + RECOMMENDED_PLUGINS.md 3항 + production path 해시 무변화.
 
 ---
 
 ### 3.3 Batch 5C — 본인 자산 신규 작성
 
-**5C 결정 용어 정의:**
+**5C 결정 용어:**
 
-| 결정 | 의미 | Phase |
-|---|---|---|
-| **implement** | 이번 Phase 5에서 구현·검증·커밋 | Phase 5 |
-| **defer** | 범위 명확·필요성 인정, 일정·스코프 사유로 보류 | Phase 9 이후 재평가 |
-| **drop** | 범위 검토 결과 불필요 또는 아키텍처적 부적합 | 영구 제외 |
+| 결정 | 의미 |
+|---|---|
+| **implement** | Phase 5 구현·검증·커밋 |
+| **defer** | 보류 → Phase 9+ 재평가 |
+| **drop** | 영구 제외 |
 
-**G2 pre-step 질문 프로토콜 (Codex 3차 V2-5 · N5 반영):**
+**사용자 결정 (2026-04-24):**
+- **C-1 `/sync-to-git`: drop** — 자동 동기화 불필요
+- **C-3 draw.io MCP: drop** — 팩 번들 X
+- **C-4 GCP MCP: drop** — 동일
+- **C-2 Git pre-commit hook: TBD** — G2 pre-step 질문지 대상
 
-Batch 5C 킥오프 시점에 Claude가 **4개 후보 각각에 대해 아래 질문지를 사용자에게 제시**. 사용자 응답 기반으로 rationale 초안 작성 → 사용자 검토·수정 → G2 승인.
-
-**질문지 템플릿 (각 후보마다 개별 적용):**
+**G2 pre-step 질문지 (C-2만):**
 
 ```
-[후보 C-X: <이름>]
-Q1. 이 자산의 주 사용 빈도는? (매일 / 주 1–2회 / 월 수 회 / 특정 이벤트 시)
-Q2. 지금 Phase 5에서 구현하면 어떤 작업이 즉시 개선되는가?
-Q3. 연기 시 영향받는 다른 작업·Phase는?
-Q4. 범위 재검토 결과 "불필요"로 판정될 수 있는 이유는?
+[후보 C-2: Git pre-commit hook]
+Q1. 주 사용 빈도? (매일 / 주 1–2회 / 월 수 회 / 특정 이벤트)
+Q2. Phase 5 구현 시 즉시 개선되는 작업?
+Q3. 연기 시 영향?
+Q4. "불필요" 판정 가능한 이유?
 ```
 
-- Q1·Q2 → implement 성향 평가
-- Q3 → defer 정당화
-- Q4 → drop 가능성 확인
-- Claude가 4답을 종합해 rationale 초안(2–3줄) 작성, 사용자가 수정
+**5C 결정표:**
 
----
-
-**5C 결정표 (G2 승인 대상)**
-
-Phase 5 exit은 **4행 전원이 결정 + rationale 기록**됐을 때만 가능.
-
-| # | 후보 | 결정 | 대상 Phase | Rationale | 대상 팩 | 예상 파일 | 검증 방법 |
+| # | 후보 | 결정 | 대상 Phase | Rationale | 대상 팩 | 예상 파일 | 검증 |
 |---|---|---|---|---|---|---|---|
-| C-1 | `/sync-to-git` (본인 래퍼·동기화) | TBD | Phase 5 or 9+ | TBD (G2 pre-step 후 채움) | productivity | TBD | TBD |
-| C-2 | Git pre-commit hook | TBD | Phase 5 or 9+ | TBD | productivity | TBD | TBD |
-| C-3 | draw.io MCP 번들 | TBD | Phase 5 or 9+ | TBD | §MCP 버킷 | TBD | TBD |
-| C-4 | GCP MCP 번들 | TBD | Phase 5 or 9+ | TBD | §MCP 버킷 | TBD | TBD |
+| C-1 | `/sync-to-git` | **drop** | — | 사용자 결정 (2026-04-24): 자동 동기화 불필요 | — | — | — |
+| C-2 | Git pre-commit hook | TBD | Phase 5 or 9+ | TBD (G2 pre-step 후) | productivity | TBD | TBD |
+| C-3 | draw.io MCP 번들 | **drop** | — | 사용자 결정: 팩 번들 X | — | docs 1줄 | 줄 존재 확인 |
+| C-4 | GCP MCP 번들 | **drop** | — | 동일 | — | docs 1줄 | 줄 존재 확인 |
 
 **MCP 버킷 규칙:**
 
 | 유형 | 위치 | 예시 |
 |---|---|---|
-| 팩 소유 MCP 서버 | 해당 팩의 `.mcp.json` + docs/env 예시 | draw.io, GCP |
 | 외부 Claude 플러그인 (권장만) | `recommends.json` + `docs/RECOMMENDED_PLUGINS.md` | codex |
-| 설치 가이드만 | docs only | 일회성 도구 |
+| 외부 MCP 서버 (요청 시 안내) | `docs/RECOMMENDED_PLUGINS.md` MCP 서브섹션 1줄 | draw.io, GCP |
 
-draw.io·GCP는 `.mcp.json` 후보. auth 노출 위험 → 5C 검증에 **`.mcp.json` 시크릿 수동 grep 필수**.
+**Sub-task 0 — G2 질문지 실행 (mandatory):**
 
-**`/sync-to-git` mini-spec (C-1 implement 시 의무, 9항):**
+1. Claude가 C-2 질문지 4문항 제시
+2. 사용자 답변 → rationale 초안 (2–3줄)
+3. 사용자 검토·수정 → 결정표 C-2 TBD 해소
+4. **G2 승인 요청** → implement이면 Sub-task 1 진입
 
-```
-source:           (예: ~/.claude/)
-destination:      (예: git@github.com:rwang2gun/ClaudeMD.git main)
-allowed paths:    whitelist
-excluded paths:   blacklist (secrets, local caches)
-direction:        push-only / pull-only / bidirectional
-conflict policy:  local wins / remote wins / prompt
-dry-run default:  true
-auth assumption:  gh CLI / ssh key / PAT env var
-secrets exclusion:  .env, *.pat, tokens, credentials 글로브
-```
-
-**Sub-task 0 — G2 질문지 실행 (mandatory, Codex 4차 #2 반영):**
-
-5C 착수 직후 다른 Sub-task 진입 전에:
-1. Claude가 4개 후보(C-1~C-4) 각각에 대해 위 질문지 4문항 사용자에게 제시
-2. 사용자 답변 기반 rationale 초안 작성 (2–3줄)
-3. 사용자 검토·수정 → 결정표 4행 전수 TBD 해소
-4. **G2 승인 요청** → 통과 시 implement 결정 항목의 Sub-task 1 진입 가능
-
-결정표가 완성되지 않은 상태에서 Sub-task 1 진입 금지.
-
-**Sub-task 1+ (implement 결정 항목당 반복):**
-1. 스펙 확정 (mini-spec 또는 해당 자산 스펙)
-2. 파일 작성 (신규 작성은 vendoring 헤더 불필요)
-3. 로컬 검증 + `.mcp.json` 시크릿 수동 grep 0건
+**Sub-task 1+ (C-2 = implement일 때만):**
+1. 스펙 확정
+2. 파일 작성
+3. 로컬 검증
 4. 개별 커밋
 
-**Exit (각 항목):** 스펙대로 동작 + 시크릿 0건.
+**Exit:** C-2 결정 기록 + drop 3건 보존 + implement 시 스펙대로 동작.
 
 ---
 
 ### 3.4 Batch 5D — 마감
 
 **Sub-task:**
-1. `docs/CHANGELOG.md` `[Unreleased]` 아래 Phase 5 블록 추가 (Codex 3차 V2-1 경로 정정):
+1. `docs/CHANGELOG.md` `[Unreleased]` 아래 Phase 5 블록:
    - `Phase 5 — YYYY-MM-DD`
-   - `Python hook cross-platform fix: A1 (python3 → python) across 12 files`
-   - `README Prerequisites section added`
-   - `§4.6 v0.1: /productivity-pack:check-recommended (scripts/check-recommended.mjs + commands/check-recommended.md incl. env override) + RECOMMENDED_PLUGINS.md polish`
-   - `Self-authored (5C implement): <목록>` / `Deferred: <목록>` / `Dropped: <목록>`
-   - `docs/CHANGELOG.md` 기존 Python hook Known Issue 라인을 "Resolved in Phase 5"로 갱신 (line 번호 참조 대신 **기존 Known issue 라인**을 탐색해 교체 — Codex 4차 #4 반영)
+   - `Python hook cross-platform fix: A1 (python3 → python, 5 hooks.json commands). hooks/*.py · core/*.py unchanged (vendored modified: none preserved).`
+   - `README Prerequisites section added with transparent platform limitation notice (Issue #37634, #18527).`
+   - `§4.6 v0.1: /productivity-pack:check-recommended + RECOMMENDED_PLUGINS.md polish (incl. MCP subsection)`
+   - `Self-authored (5C): <C-2 결과>` / `Dropped: C-1, C-3, C-4`
+   - `Accepted platform limitation: on systems where 'python' points to Python 2 (e.g., Ubuntu ≤20.04), hooks gracefully skip via hookify's existing ImportError handler. Main Claude Code operation is not impacted. Follow-up tracked: upstream Claude Code Issues #37634, #18527. Revisit in Phase 9.`
+   - Python hook Known Issue 라인을 "Resolved in Phase 5 (A1 + graceful skip on Py2 systems; see Accepted Limitations)"로 갱신 (**기존 Known issue 라인**을 탐색해 교체)
 2. `MASTER_PLAN_v1.5.md` §8 상태 라인 추가
 3. `phase5-plan.md` → `docs/archive/` (§3.1.1 source-lock appendix 포함)
 4. 마감 커밋
@@ -311,43 +345,46 @@ secrets exclusion:  .env, *.pat, tokens, credentials 글로브
 
 | # | 리스크 | 대응 |
 |---|---|---|
-| 1 | A1이 Ubuntu 20.04 이하·python3 미존재 환경에서 실패 | README PREREQUISITES가 baseline 명시. pain report 시 Phase 9 wrapper 방식 승급 |
-| 2 | source-lock appendix(§3.1.1) 누락 | 5A-4에서 전수, 커밋 전 diff 확인 |
-| 3 | `check-recommended.mjs`의 `${CLAUDE_PLUGIN_ROOT}` 미존재 환경 | §4.6.2 fallback (`import.meta.url`) 구현 |
-| 4 | fixture 스키마 드리프트 | §4.6.2 reference implementation과 fixture 구조 동기. Phase 9 이후 재확인 |
-| 5 | 5C `.mcp.json` 시크릿 스캔 도구 부재 | 수동 grep + gitleaks(있으면) |
-| 6 | 5C rationale TBD로 G2 직전까지 남음 | G2 pre-step 질문 프로토콜이 선행 해소 |
-| 7 | A1 적용 후 다른 숨겨진 hook 문제 노출 (예: .py 자체 버그) | 5A-7 경로 A에서 error grep. Python hook error 외 패턴 발견 시 별도 티켓 분리 |
+| 1 | Ubuntu 20.04 이하·`python`=Py2 환경에서 훅 비활성 | hookify 원본 graceful skip이 처리. README Prerequisites에 투명 고지 |
+| 2 | Claude Code 자체 버그(#37634 등)로 Windows에서 훅이 예상 외 동작 | Phase 9에서 upstream 상태 재확인. Phase 5 범위 외 |
+| 3 | source-lock appendix 누락 | 5A-5 전수, 커밋 전 diff 확인 |
+| 4 | `check-recommended.mjs`의 `${CLAUDE_PLUGIN_ROOT}` 미존재 | §4.6.2 `import.meta.url` fallback. Cell 12 검증 |
+| 5 | fixture 스키마 드리프트 | §4.6.2 reference와 동기. Phase 9 재확인 |
+| 6 | 5C C-2 rationale TBD 잔존 | G2 pre-step 질문지 선행 (1건이라 경량) |
+| 7 | production path 테스트(Cell 11)가 실 파일 mutation 유발 | 실행 전후 해시 비교 + read-only 경로 확인 |
+| 8 | MCP 번들 생략 → 사용자가 나중에 수동 추가 → 시크릿 노출 | Phase 5 scope 외. Phase 6 `validate-plugins.ps1` 후 재평가 |
+| 9 | 플랫폼 한계 고지를 사용자가 간과 | README 전용 섹션 + CHANGELOG Accepted Limitations 블록으로 이중 고지 |
 
 ---
 
 ## 5. 검증 접근
 
-- **5A**: 경로 A(런타임 transcript 0 error) + 경로 B(직접 호출 없음 확인) + §3.1.1 표 12행 + README PREREQUISITES 렌더링 확인
-- **5B**: 10 cells 매트릭스, 실 `installed_plugins.json` 무변경, command doc env override 서브섹션 존재 확인
-- **5C**: 각 implement 자산 스펙별 수동 테스트 + `.mcp.json` 시크릿 grep
-- **5D**: 문서 diff + `docs/CHANGELOG.md` Known Issue 라인 갱신 확인
+- **5A**: 경로 A-Win + A-POSIX 런타임 Python hook error 0건 + §3.1.1 표 완성 + README Prerequisites 렌더링 + vendored 7개 파일 `modified: none` 유지 확인
+- **5B**: 12 cells 매트릭스, Cell 11 해시 무변화, Cell 12 fallback 동작, command doc env override 서브섹션 존재, RECOMMENDED_PLUGINS.md 3항
+- **5C**: C-2 implement일 때만 스펙별 수동 테스트. drop 3건은 결정표 rationale 기록
+- **5D**: 문서 diff + Known Issue 라인 갱신 + Accepted Limitations 블록 존재
 
-**공통:** `validate-plugins.ps1` 부재 → 신규·수정 파일 수동 grep으로 개인정보·경로·시크릿 0건 (Phase 6에서 자동화).
+**공통:** 신규·수정 파일 수동 grep으로 개인정보·절대경로 0건 (Phase 6 자동화).
 
 ---
 
 ## 6. Exit Criteria
 
 ### 6.1 Phase 5 자체
-- [ ] Batch 5A — 경로 A transcript Python hook error 0건, §3.1.1 표 12행 완성, `README.md`에 Prerequisites 섹션 존재
-- [ ] Batch 5B — 10 cells pass, fixture 외 파일 mutation 0건, command doc env override 서브섹션 존재
-- [ ] Batch 5C — 결정표 4행 전부 implement/defer/drop + rationale 채움. implement 항목 구현·검증 완료
-- [ ] 모든 신규 작성 파일에 개인정보·절대경로·하드코딩·시크릿 0건
+- [ ] Batch 5A — A-Win · A-POSIX 런타임 Python hook error 0건, §3.1.1 표 완성, README Prerequisites 섹션 존재(플랫폼 한계 고지 포함), vendored `modified: none` 유지
+- [ ] Batch 5B — 12 cells pass, Cell 11 해시 무변화, Cell 12 fallback 동작, command doc env override 서브섹션, RECOMMENDED_PLUGINS.md 3항
+- [ ] Batch 5C — 결정표 C-2 결정 + rationale, drop 3건 보존, implement 시 구현·검증
+- [ ] 모든 신규 파일에 개인정보·절대경로 0건
 
 ### 6.2 §4.6 v0.1 충족
-- [ ] `docs/RECOMMENDED_PLUGINS.md` §4.6.1 요건 + 2개 보강 항목
+- [ ] `docs/RECOMMENDED_PLUGINS.md` §4.6.1 요건 + 3 보강 항목
 - [ ] `plugins/productivity-pack/.claude-plugin/recommends.json` 구조 확인
-- [ ] `/productivity-pack:check-recommended` 10 cells 동작 + env override 문서화
+- [ ] `/productivity-pack:check-recommended` 12 cells 동작 + env override 문서화
 
 ### 6.3 Phase 4 이월 이슈 종결
-- [ ] `docs/CHANGELOG.md` [Unreleased] Python hook Known Issue 라인 "Resolved in Phase 5"로 갱신
-- [ ] §3.1.1 source-lock appendix 12행 완성 (본 문서 내, 5D에서 archive 함께 이관, `docs/archive/phase4-source-lock.md`는 read-only 유지)
+- [ ] `docs/CHANGELOG.md` Python hook Known Issue 라인 "Resolved in Phase 5 (A1 + graceful skip)" 갱신
+- [ ] `docs/CHANGELOG.md` Accepted Limitations 블록 추가 (Issue #37634, #18527 언급)
+- [ ] §3.1.1 source-lock appendix 완성
 
 ### 6.4 문서 마감
 - [ ] `MASTER_PLAN_v1.5.md` §8 상태 라인 업데이트
@@ -358,93 +395,108 @@ secrets exclusion:  .env, *.pat, tokens, credentials 글로브
 
 ## 7. 확정된 결정사항 (변경 불가)
 
-- 스트림 순서: **A → B → C → D** 고정
-- 커밋 단위: **배치당 1 커밋** (5C는 자산당 1 커밋)
+- 스트림 순서: **A → B → C → D**
+- 커밋 단위: 배치당 1 커밋 (5C는 자산당 1 커밋)
 - 승인 지점: **G1 + G2 mandatory**
-- Codex 리뷰 게이트: **1차·2차·3차(+v3)·4차(5C)** — 4차 mandatory
-- Python hook 수정: **A1 (`python3` → `python`)**. POSIX baseline은 README PREREQUISITES로 문서화. wrapper-file 승급은 Phase 9 pain report 이후
-- `/check-recommended` 구조: **`commands/check-recommended.md`** (지시 + env override 서브섹션) + **`scripts/check-recommended.mjs`** (실행 스크립트)
-- `check-recommended.mjs`는 `RWANG_INSTALLED_PLUGINS_PATH` env 오버라이드 지원. command doc에도 기재 의무
-- MCP 버킷 규칙: **팩 소유 → `.mcp.json` / 외부 플러그인 → `recommends.json`**
-- Phase 5 source-lock: **본 문서 §3.1.1 inline 표** (phase4-source-lock.md read-only)
-- 5C 결정어: implement / defer / drop. G2 pre-step 질문 프로토콜로 rationale 초안 작성 → 사용자 확정
-- `validate-plugins.ps1` 작성: **Phase 6 몫**
+- Codex 리뷰 게이트: 1~7차 CLOSED. **8차·9차 optional (informational, non-blocking)** — Anthropic 공식 방침 준수 원칙이 상위
+- Python hook 수정: **A1 (`python3` → `python`)** + **플랫폼 한계 투명 수용**. hookify graceful skip 철학 보존. vendored `hooks/*.py`·`core/*.py` `modified: none` 유지
+- **폐기된 v5 산출물**: `launch-python.mjs`, `install-check.mjs`, plugin.json precondition 조사 sub-task (Claude Code 미지원 확정)
+- `/check-recommended` 구조: `commands/check-recommended.md` (지시 + env override) + `scripts/check-recommended.mjs` (실행). Node는 이 수동 명령 선에서만 prereq
+- MCP 버킷: 외부 플러그인 → `recommends.json` / 외부 MCP 서버 → `RECOMMENDED_PLUGINS.md` 서브섹션 1줄. 팩 소유 `.mcp.json` 번들은 Phase 5 미채택
+- Phase 5 source-lock: 본 문서 §3.1.1 inline 표
+- 5C 결정어: implement / defer / drop
+- **C-1 / C-3 / C-4: drop** (사용자 결정 2026-04-24)
+- `validate-plugins.ps1`: Phase 6
 
 ---
 
 ## 8. Codex 리뷰 반영 로그
 
-### 8.1 1차 리뷰 (2026-04-23) — CLOSED (9건 반영 → v1)
+### 8.1 1차 (2026-04-23) — CLOSED (9건 → v1)
 
-Verdict: **GO with modifications**.
+Verdict: GO with modifications. 반영 상세는 v1 이력 참조.
 
-| # | Codex 지적 | 심각도 | 반영 위치 |
+### 8.2 2차 (2026-04-23) — CLOSED (7건 → v2)
+
+Verdict: NEEDS v2 round. A2 inline wrapper 도입 (v6에서 사망 확정).
+
+### 8.3 3차 (2026-04-23) — CLOSED (5건 → v3)
+
+Verdict: NEEDS v3 round. A1 회귀 (v4에서 A3로 승급했다가 v6에서 다시 A1 + 한계 수용으로 최종).
+
+### 8.4 4차 (2026-04-23) — CLOSED (4건 → v3.1)
+
+Verdict: APPROVE with minor edits.
+
+### 8.5 5차 adversarial (2026-04-24) — CLOSED (3 High → v4)
+
+Verdict: needs-attention.
+
+| # | 지적 | 심각도 | v6 최종 처리 |
 |---|---|---|---|
-| 1 | A1 "변경 불가" 고정 | MAJOR | §3.1 (v1 A1 완화 → v2 A2 → v3 A1+baseline) |
-| 2 | shebang 변경과 hooks.json 경로 무관 | MINOR | §3.1 Sub-task 7 경로 A/B 분리 |
-| 3 | `modified: minor`만으론 감사 추적 약함 | MINOR | §3.1.1 per-file 12행 표 |
-| 4 | 5B 검증이 file-missing만 커버 | MAJOR | §3.2 5케이스 × 2셸 매트릭스 |
-| 5 | `node -e` + ESM 셸 프래질 | MAJOR | §3.2 번들 `.mjs` + `.md` 지시 |
-| 6 | 5C 결정표 없음, exit 축소 가능 | MAJOR | §3.3 결정표 의무 + exit 4행 처리 요건 |
-| 7 | MCP 버킷 모호 | MAJOR | §3.3 MCP 버킷 규칙 표 |
-| 8 | `/sync-to-git` 미명세 | MAJOR | §3.3 mini-spec 9항 |
-| 9 | 5C scope review optional | MINOR | §2 Codex 4차 mandatory |
+| H1 | A1 POSIX baseline 축소 | HIGH | **재수용** — Claude Code 크로스 플랫폼 미지원 + hookify graceful skip 철학이 공식 패턴. 투명 문서화로 mitigation |
+| H2 | `/sync-to-git` mini-spec 위험 | HIGH | C-1 drop (사용자 결정 유지) |
+| H3 | `.mcp.json` 시크릿 manual grep | HIGH | C-3/C-4 drop (사용자 결정 유지) |
 
-### 8.2 2차 리뷰 (2026-04-23) — CLOSED (7건 반영 → v2 / 일부는 v3까지 이어짐)
+### 8.6 6차 adversarial (2026-04-24) — CLOSED (3건 → v5)
 
-Verdict: **NEEDS v2 round**.
+Verdict: needs-attention.
 
-| # | 지적 | 심각도 | 반영 |
+| # | 지적 | 심각도 | v6 최종 처리 |
 |---|---|---|---|
-| round-1 #1 잔존 | A2' validator 미지정 | MAJOR | v2 A2 inline → v3 A1+baseline로 최종 해소 |
-| round-1 #3 잔존 | archive 수정 | MAJOR | v2 §3.1.1 inline으로 해소 |
-| N1 | cross-platform validator | MAJOR | v3 A1+baseline 해소 |
-| N2 | archived 문서 mutation | MAJOR | v2 inline 해소 |
-| N3 | `.mjs` under `commands/` | MAJOR | v2 `scripts/` 이동 해소 |
-| N4 | 실 `installed_plugins.json` mutation | MAJOR | v2 env override → v3 command doc 문서화 의무 추가 |
-| N5 | 5C rationale 주체·semantics | MINOR | v2 정의 → v3 G2 pre-step 질문 프로토콜 추가 |
+| H1 | A3 Node 의존성 무방비 | HIGH | **A3 자체 폐기**로 해소 |
+| M1 | 런처 self-test argv 계약 불일치 | MEDIUM | 런처 폐기로 소멸 |
+| M2 | 5B production 경로 미검증 | MEDIUM | **v5 설계 유지** — 12 cells 매트릭스 (Cell 11 해시 무변화 + Cell 12 fallback) |
 
-### 8.3 3차 리뷰 (2026-04-23) — CLOSED (5건 반영 → v3)
+### 8.7 7차 adversarial (2026-04-24) — CLOSED (3건 → v6)
 
-Verdict: **NEEDS v3 round**.
+Verdict: needs-attention.
 
-**Round 2 PARTIAL:**
-
-| # | 잔존 지적 | 반영 |
-|---|---|---|
-| round-1 #1 / N1 잔존 | A2 shell 가정 미검증 | §3.1 A1 회귀 + README PREREQUISITES 신설 |
-| N4 잔존 | command doc에 env override 미기록 | §3.2 command doc 필수 서브섹션 |
-| N5 잔존 | G2 pre-step 질문 구체성 | §3.3 질문 프로토콜 4문항 |
-
-**Round 3 신규:**
-
-| # | Codex 지적 | 심각도 | 반영 위치 |
+| # | 지적 | 심각도 | v6 최종 처리 |
 |---|---|---|---|
-| V2-1 | CHANGELOG 경로 오기 (`CHANGELOG.md` vs `docs/CHANGELOG.md`) | MAJOR | 헤더 링크 + 본문 전수 정정 |
-| V2-2 | A2 shell assumption 미검증 | MAJOR | §3.1 A1 회귀 |
-| V2-3 | fixture-missing 구성 모호 | MINOR | §3.2 4개 real fixture + 1개 nonexistent path 명시 |
-| V2-4 | command doc env override 문서화 누락 | MAJOR | §3.2 command doc 필수 서브섹션 |
-| V2-5 | Public baseline 미문서화 | ADVISORY | §3.1 Sub-task 5 `README.md` Prerequisites 신설 |
+| H1 | Node-less 환경 훅 조용한 실패 | HIGH | **A3·install-check 폐기로 경로 소멸**. 플랫폼 한계 투명 수용 (README + CHANGELOG) |
+| M1 | install-check 자기모순(Node로 Node 체크) | MEDIUM | install-check 폐기로 소멸 |
+| M2 | 런처 에러 경로 README 불일치 | MEDIUM | 런처 폐기로 소멸 |
 
-### 8.4 4차 리뷰 (2026-04-23) — CLOSED (4건 반영 → v3.1)
+**조사 기록 (2026-04-24, claude-code-guide 2회):**
 
-Verdict: **APPROVE with minor edits**.
+| 질문 | 결과 |
+|---|---|
+| `plugin.json` precondition 필드 지원? | **No** (공식 스키마 미정의) |
+| hooks.json command 실행 실패 처리? | **조용한 non-blocking 스킵**. Claude에게 전달 안 됨 |
+| Anthropic 공식 크로스 플랫폼 훅 패턴? | **부재**. hookify 원본도 Linux/macOS 기반 |
+| hooks command shell 실행자? | 기본 bash. **Windows 환경에서 `bash`가 WSL 스텁으로 해석되는 버그** (#37634) |
+| `shell:` 옵션 공식 스키마? | **미정의** |
+| 인터프리터 없이 `.py` 경로만? | **미지원**. Windows py launcher도 hook runner spawn에 자동 개입 안 함 |
 
-| # | Codex 지적 | 심각도 | 반영 위치 |
-|---|---|---|---|
-| 1 | env override MASTER 관계 불명 | MINOR | §3.2 "MASTER §4.6.2와 관계" 블록 추가 (testability 확장 명시) |
-| 2 | G2 질문지 실행 시점 암묵적 | MINOR | §3.3 Sub-task 0 mandatory 추가 (Sub-task 1 진입 전 필수) |
-| 3 | README Prerequisites 배치 불명 | ADVISORY | §3.1 Sub-task 5에 "before `## Install`" 앵커 |
-| 4 | CHANGELOG line 18 참조 brittle | ADVISORY | §3.4에서 라인 번호 대신 "기존 Known issue 라인 탐색" |
+**상위 원칙 채택:** Anthropic 공식 방침(hookify graceful skip 철학) > Codex 완벽주의 권고. 플랫폼이 제공하지 않는 우회책 개발보다 한계 투명화가 장기 사후 비용 최소.
 
-Codex 리뷰 사이클 **모두 CLOSED**. G1 승인만 남음.
+### 8.8 8차 이후 (optional)
+
+v6는 Anthropic 공식 방침 준수를 상위 원칙으로 채택. Codex 추가 지적은 **informational 참고로 처리**, blocker 아님. Phase 9 upstream 개선 이후 재평가.
 
 ---
 
 ## 9. 실행 대기 중
 
-**현재 상태**: v3.1 완성. Codex 4차 리뷰 APPROVE, 4건 반영 완료.
+**현재 상태**: v6 완성. Codex 7차 + 플랫폼 조사 결과 반영. 설계 대폭 단순화.
 
-**다음 액션**:
+**v5 → v6 삭제된 산출물:**
+- `hooks/launch-python.mjs` (Node 런처)
+- `scripts/install-check.mjs` (설치 검증)
+- plugin.json precondition 조사 sub-task
+- 관련 검증 경로 B(self-test), C(install-check)
+
+**v6에서 남은 5A 산출물:**
+- `hooks.json` 5개 command 단순 치환
+- `README.md` Prerequisites 섹션 + 플랫폼 한계 고지
+
+**다음 액션:**
 1. 사용자 **G1 승인 요청**
-2. G1 통과 → Batch 5A 시작
+2. G1 통과 → Batch 5A 시작:
+   1. `hooks.json` command 치환
+   2. README Prerequisites 작성 (플랫폼 한계 고지 포함)
+   3. §3.1.1 source-lock 채움
+   4. A-Win / A-POSIX 검증
+3. Batch 5C 진입 시 C-2 G2 pre-step → G2
+4. (optional) Codex 8차 informational 리뷰
