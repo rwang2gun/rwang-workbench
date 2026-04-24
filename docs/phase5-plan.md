@@ -385,7 +385,7 @@ Q4. "불필요" 판정 가능한 이유?
 
 ### 6.1 Phase 5 자체
 - [x] Batch 5A (2026-04-24) — A-Win·A-POSIX 런타임 직접 검증은 환경 제약으로 보류, graceful skip 실제 작동 확인됨. §3.1.1 표 완성, README Prerequisites 섹션(플랫폼 한계 고지 포함), vendored 7개 파일 `modified: none` 유지. Exit 조건 문서상 요건은 충족, 실환경 Python 3 설치 후 확인은 후속
-- [ ] Batch 5B — 12 cells pass, Cell 11 해시 무변화, Cell 12 fallback 동작, command doc env override 서브섹션, RECOMMENDED_PLUGINS.md 3항
+- [x] Batch 5B (2026-04-24) — 12 cells 전수 pass (Git Bash + PowerShell 5.1 + production + fallback), Cell 11 md5 무변화 (`64819c38…a79e` before == after), Cell 12 `import.meta.url` fallback 정상 동작, command doc env override 서브섹션 포함, RECOMMENDED_PLUGINS.md 3항 반영(초기 설치 one-liner + `/check-recommended` 안내 + MCP 서브섹션)
 - [ ] Batch 5C — 결정표 C-2 결정 + rationale, drop 3건 보존, implement 시 구현·검증
 - [ ] 모든 신규 파일에 개인정보·절대경로 0건
 
@@ -492,13 +492,13 @@ v6는 Anthropic 공식 방침 준수를 상위 원칙으로 채택. Codex 추가
 
 ## 9. 실행 현황
 
-**현재 상태 (2026-04-24)**: G1 승인. **Batch 5A 완료**. 5B 대기.
+**현재 상태 (2026-04-24)**: G1 승인. **Batch 5A·5B 완료**. 5C 대기 (C-2 G2 pre-step 질문지).
 
 **진행:**
 - [x] G1 승인 (2026-04-24)
 - [x] Batch 5A (2026-04-24) — commit `Phase 5A: Python hook cross-platform fix (A1) + README Prerequisites`
-- [ ] Batch 5B — `/productivity-pack:check-recommended` + RECOMMENDED_PLUGINS.md + 12 cells 검증
+- [x] Batch 5B (2026-04-24) — `scripts/check-recommended.mjs` + `commands/check-recommended.md` + fixture 4종 + RECOMMENDED_PLUGINS.md 3항 + 12 cells 전수 pass
 - [ ] Batch 5C — C-2 G2 pre-step 질문지 → 결정 → 필요 시 구현
 - [ ] Batch 5D — 마감 (CHANGELOG Phase 5 블록 + MASTER_PLAN §8 업데이트 + archive 이관)
 
-**다음 액션:** Batch 5B 착수. `scripts/check-recommended.mjs` 작성부터.
+**다음 액션:** Batch 5C 착수. CLAUDE.md의 C-2 질문지(Q1–Q4)를 사용자에게 제시하고 응답 받아 rationale 작성 → G2 승인 → implement / defer / drop 결정.

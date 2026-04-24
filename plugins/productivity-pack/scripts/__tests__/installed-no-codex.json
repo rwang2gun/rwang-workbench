@@ -1,0 +1,7 @@
+{
+  "plugins": {
+    "some-other": [
+      { "scope": "user", "version": "1.0.0" }
+    ]
+  }
+}

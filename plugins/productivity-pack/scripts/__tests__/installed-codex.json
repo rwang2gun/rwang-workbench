@@ -1,0 +1,10 @@
+{
+  "plugins": {
+    "codex@openai-codex": [
+      { "scope": "user", "version": "0.1.0" }
+    ],
+    "some-other": [
+      { "scope": "user", "version": "1.0.0" }
+    ]
+  }
+}

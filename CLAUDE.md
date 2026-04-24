@@ -10,35 +10,25 @@
 |---|---|---|
 | 1–4 | ✅ 완료 | vendoring + 스캐폴드 + 44 컴포넌트 편입 |
 | **5A** | ✅ 완료 (commit `7ed1575`) | Python hook A1 (`python3`→`python`) + README Prerequisites |
-| **5B** | 🔶 **다음 착수 대상** | `/productivity-pack:check-recommended` 구현 |
-| 5C | ⬜ 대기 | C-2 Git pre-commit hook G2 pre-step 결정. C-1/C-3/C-4는 drop 확정 |
+| **5B** | ✅ 완료 | `/productivity-pack:check-recommended` + fixture 4종 + RECOMMENDED_PLUGINS.md 3항 + 12 cells pass |
+| **5C** | 🔶 **다음 착수 대상** | C-2 Git pre-commit hook G2 pre-step 결정. C-1/C-3/C-4는 drop 확정 |
 | 5D | ⬜ 대기 | 마감 (CHANGELOG + MASTER_PLAN §8 + archive 이관) |
 
-**Working tree**: clean, origin/main 동기화됨.
+**Working tree**: 5B 커밋 직후 → clean 유지 (5B 내용은 커밋됨).
 
 ---
 
-## 다음 액션 — Batch 5B
+## 다음 액션 — Batch 5C
 
-**목표**: `/productivity-pack:check-recommended` 명령어 + 문서 보강.
+**목표**: C-2 (Git pre-commit hook) G2 pre-step 질문지 실행 → rationale 확정 → implement / defer / drop 결정.
 
-**서브태스크** (phase5-plan.md §3.2 참조):
+**서브태스크** (phase5-plan.md §3.3):
 
-1. `plugins/productivity-pack/scripts/check-recommended.mjs` 작성
-   - ESM, `RWANG_INSTALLED_PLUGINS_PATH` env override 지원
-   - `${CLAUDE_PLUGIN_ROOT}` 미존재 시 `import.meta.url` fallback
-2. `plugins/productivity-pack/commands/check-recommended.md` 작성
-   - Claude 지시 + **env override 서브섹션 의무**
-3. `plugins/productivity-pack/scripts/__tests__/` 아래 fixture JSON 4개
-   - `installed-codex.json`, `installed-no-codex.json`, `bad-json.json`, `unexpected-schema.json`
-4. `docs/RECOMMENDED_PLUGINS.md` 3항 보강
-   - 초기 설치 one-liner
-   - `/productivity-pack:check-recommended` 언급
-   - **MCP 서버 추천 서브섹션** (draw.io / GCP는 요청 시 안내 — 번들 없음)
-5. **12 cells 검증** (fixture 10 + production 2)
-6. 배치 커밋
-
-**Exit 기준**: 12 cells 전수 pass + command doc env override 서브섹션 존재 + RECOMMENDED_PLUGINS.md 3항 완료 + 실 `installed_plugins.json` 해시 무변화.
+1. 아래 C-2 질문지 Q1–Q4를 사용자에게 제시하고 응답 받기
+2. 응답 바탕으로 결정표 C-2 TBD 해소 (rationale 2–3줄)
+3. G2 승인 요청
+4. implement이면 스펙 확정 → 파일 작성 → 검증 → 자산당 1 커밋
+5. defer / drop이면 결정표만 기록하고 5D로 이행
 
 ---
 
