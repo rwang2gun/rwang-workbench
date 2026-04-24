@@ -11,40 +11,35 @@
 | 1–4 | ✅ 완료 | vendoring + 스캐폴드 + 44 컴포넌트 편입 |
 | **5A** | ✅ 완료 (commit `7ed1575`) | Python hook A1 (`python3`→`python`) + README Prerequisites |
 | **5B** | ✅ 완료 (commit `914befe`) | `/productivity-pack:check-recommended` + fixture 4종 + RECOMMENDED_PLUGINS.md 3항 + 12 cells pass |
-| **5C** | ✅ 완료 | C-2 implement (a+b+d). `scripts/git-hooks/pre-commit` + README. C-1/C-3/C-4 drop 보존. 6 시나리오 전수 pass |
-| **5D** | 🔶 **다음 착수 대상** | 마감 (CHANGELOG + MASTER_PLAN §8 + archive 이관) |
+| **5C** | ✅ 완료 (commit `bd5e16e`) | C-2 implement (a+b+d). `scripts/git-hooks/pre-commit` + README. C-1/C-3/C-4 drop 보존. 6 시나리오 전수 pass |
+| **5D** | ✅ 완료 | 마감: CHANGELOG Phase 5 블록 + Known Issue "Resolved" + Accepted Limitations + MASTER_PLAN §8 + phase5-plan archive 이관 |
+| **Phase 5** | ✅ **전체 완료** | Phase 6 대기 |
 
-**Working tree**: 5C 커밋 직후 → clean 유지.
+**Working tree**: Phase 5D 마감 커밋 직후 → clean 유지.
 
 **Repo-local 훅 활성화 상태**: `core.hooksPath = scripts/git-hooks` 로컬에 설정됨 (이 PC). 다른 PC에서 클론 후 1회 실행 필요.
 
 ---
 
-## 다음 액션 — Batch 5D (마감)
+## 다음 액션 — Phase 6 착수
 
-**목표**: Phase 5 마감.
+Phase 5 완료. 다음 세션은 Phase 6 실행 계획 작성으로 시작.
 
-**서브태스크** (phase5-plan.md §3.4):
+**Phase 6 예비 scope** (MASTER_PLAN v1.5 §5 참조):
+- `scripts/validate-plugins.ps1` 본격화 (Phase 2에서 `Work/phase2-validate-plugins.ps1` 임시 버전 운용 중)
+- Phase 4에서 이연된 gitleaks / 스캔 자동화 흡수
+- game-design-pack 유예 상태 재검토(필요 시)
 
-1. `docs/CHANGELOG.md` [Unreleased] 아래 Phase 5 블록 추가:
-   - Phase 5A (A1 + README Prerequisites)
-   - Phase 5B (`/productivity-pack:check-recommended` + RECOMMENDED_PLUGINS.md)
-   - Phase 5C (C-2 implement; C-1/C-3/C-4 drop)
-   - Python hook Known Issue 라인을 "Resolved in Phase 5 (A1 + graceful skip)"로 갱신
-   - Accepted Limitations 블록 추가 (Issue #37634, #18527)
-2. `docs/MASTER_PLAN_v1.5.md` §8 상태 라인 추가
-3. `docs/phase5-plan.md` → `docs/archive/phase5-plan.md` 이관
-4. 마감 커밋
+Phase 6 plan 착수 시 `docs/phase6-plan.md` 신규 생성 + MASTER_PLAN §8 업데이트 루틴 반복.
 
 ---
 
 ## 핵심 설계 문서
 
 - **[docs/MASTER_PLAN_v1.5.md](docs/MASTER_PLAN_v1.5.md)** — 전체 설계. §5 Phase 계획 + §8 상태. **수정 금지** (역사적 기록). §8만 Phase 마감 시 업데이트
-- **[docs/phase5-plan.md](docs/phase5-plan.md)** — 현재 Phase 5 실행 계획 v6. §9 실행 현황이 체크포인트
-- **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — Phase 5 블록은 5D 마감 시 일괄 추가
-- **[docs/RECOMMENDED_PLUGINS.md](docs/RECOMMENDED_PLUGINS.md)** — 5B 보강 대상
-- **[docs/archive/](docs/archive/)** — 완료된 Phase 플랜·source-lock
+- **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — Phase 5 블록 기록 완료. Phase 6부터 동일 패턴으로 추가
+- **[docs/RECOMMENDED_PLUGINS.md](docs/RECOMMENDED_PLUGINS.md)** — 5B 보강 완료. 향후 추천 항목 추가 시 갱신
+- **[docs/archive/](docs/archive/)** — 완료된 Phase 플랜·source-lock (`phase4-plan.md`, `phase4-source-lock.md`, `phase5-plan.md`)
 
 ---
 
@@ -96,7 +91,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 
 ## 대기 중인 사용자 결정
 
-없음. Phase 5는 5D 마감만 남음.
+없음. Phase 5 전체 완료. Phase 6 착수 시점은 사용자 지시 대기.
 
 ---
 
