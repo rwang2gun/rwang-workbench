@@ -45,7 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 **Phase 6B — 인터랙티브 로컬 설치 재검증 (B-0~B-8)**
 
-- `claude plugin` CLI 전 단계 자동화. B-0 클린 확보 (원본 `hookify` 독립 설치 **not found** 확인, 두 팩 + GitHub-source marketplace 모두 제거) / B-1 `claude plugin marketplace add D:/claude/rwang-workbench` (Directory source로 재등록) / B-2·B-3 두 팩 install OK.
+- `claude plugin` CLI 전 단계 자동화. B-0 클린 확보 (원본 `hookify` 독립 설치 **not found** 확인, 두 팩 + GitHub-source marketplace 모두 제거) / B-1 `claude plugin marketplace add <repo absolute path>` (Directory source로 재등록) / B-2·B-3 두 팩 install OK.
 - B-2a hook 실 실행 검증: 임시 `.claude/hookify.phase6-smoke.local.md` (`event: bash`, `pattern: phase6-hook-smoke`, `action: warn`, body `SMOKE-OK`) → `echo phase6-hook-smoke` → **세션 jsonl의 PreToolUse+PostToolUse `hook_system_message` attachment로 `SMOKE-OK` 발화 확증** (exit 0, 158ms). 스모크 파일 삭제 완료.
 - **Python 3 설치**: 이 PC에 Python 3 미설치 상태였음 → `winget install Python.Python.3.12 --scope user` 로 Python 3.12.10 설치, Claude Code 재시작 후 `python.exe` 리졸브가 `...Programs\Python\Python312\python.exe`로 전환됨 (기존 Windows Store stub은 PATH 후순위로 강등). CLAUDE.md 환경 특이사항 "Python 3 미설치" 해소.
 - B-4 `productivity-pack:help` / B-4a `analysis-pack:playground` skill 로드·응답 생성 / B-5 `/productivity-pack:check-recommended` command load PASS (출력은 💡 `marketplace-not-found` — production 경로에서 local Directory source marketplace를 스크립트가 resolve하지 못하는 현상; plan §3.2 판단 기준상 non-blocking) / B-6·B-7 uninstall OK.
@@ -96,7 +96,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 - `git pull origin main` after PR #1 merge; 15 files updated, local main at `2dc0941`.
 - `check-recommended.mjs` 5 fixture scenarios pass: installed-codex (✅), installed-no-codex (❌), bad-json (parse-failed warning), unexpected-schema (warning), file-missing (warning).
-- `scripts/git-hooks/pre-commit` 3 scenarios pass: secret-pattern block (AKIA…), personal-path block (`C:/Users/code1412/…`), vendored `modified: none` protection block.
+- `scripts/git-hooks/pre-commit` 3 scenarios pass: secret-pattern block (AKIA…), personal-path block (Windows 사용자 홈 형태 절대경로), vendored `modified: none` protection block.
 - `hooks.json` all 5 commands confirmed `python` (not `python3`); `recommends.json` codex entry structure valid.
 
 **Phase 4 Known Issue resolution**
@@ -133,7 +133,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 - `/plugin install analysis-pack@rwang-workbench` → success.
 - `/plugin install productivity-pack@rwang-workbench` → success.
 - `/plugin uninstall` + reinstall cycle → success.
-- Portability: fresh `git clone` into `D:/claude/rwang-workbench` + full install flow passed. No absolute-path or personal-identifier dependencies detected.
+- Portability: fresh `git clone` into a local Windows absolute path + full install flow passed. No absolute-path or personal-identifier dependencies detected.
 - `recommends.json` raises no `plugin.json` schema warnings (separate file).
 
 ### Notes

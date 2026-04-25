@@ -315,7 +315,7 @@ modified: none
 
 | 패턴 | 파일 건수 | 판정 | 사유 |
 |---|---|---|---|
-| `rwang2gun` / `code1412` / `C:\Users\code1412` / `D:\claude` | 0 | pass | 개인 식별자 없음 |
+| GitHub 계정명 / Windows 사용자명 / Windows 사용자 홈 절대경로 / Windows 작업 루트 | 0 | pass | 개인 식별자 없음 |
 | `/Users/`, `/home/` | 7건 | warn+allow | 모두 anti-pattern 예시(❌), `alice`/`name` 가상 사용자, 또는 hook-linter의 탐지 regex 패턴 |
 | email | 9건 | warn+allow | 전부 `@example.com` 또는 `@company.com` RFC 예약 placeholder |
 | PEM/ghp/sk- token | 0 | pass | — |

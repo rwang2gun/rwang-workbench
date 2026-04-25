@@ -328,7 +328,7 @@ Q4. "불필요" 판정 가능한 이유?
 - [x] 검증 6 시나리오 전수 pass:
   1. clean staging → exit 0
   2. fake AWS key `AKIA...` → 블록
-  3. `C:\Users\<owner>\...` 패턴 staged (실제 테스트는 owner 유저명 사용) → 블록
+  3. Windows 사용자 홈 절대경로 형태 패턴 staged (실제 테스트는 owner 유저명 사용) → 블록
   4. vendored `modified: none` 파일 수정 → 블록
   5. 새 vendored 파일 Add → 통과 (M 아닌 A)
   6. `--no-verify` 우회 → 정상 커밋

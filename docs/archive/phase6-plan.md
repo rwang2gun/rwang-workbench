@@ -149,7 +149,7 @@ Phase 3 acceptance에서 수행한 설치 검증을 Phase 5 변경사항 반영 
 | # | 단계 | 기대 결과 | blocker? |
 |---|---|---|---|
 | B-0 | 기존 rwang-workbench 마켓플레이스/팩 등록 상태 확인 + 이미 설치된 경우 uninstall/remove 처리. **`/plugin list`에서 원본 `hookify` 독립 설치 여부 확인** — 발견 시 source/marketplace 기록 + uninstall 수행 + CHANGELOG 기록; 없으면 "not found" 기록 | 클린 상태 확보 (hookify 부재 확인 포함) | Yes |
-| B-1 | `/plugin marketplace add D:/claude/rwang-workbench` | 마켓플레이스 등록 성공 | Yes |
+| B-1 | `/plugin marketplace add <repo absolute path>` | 마켓플레이스 등록 성공 | Yes |
 | B-2 | `/plugin install productivity-pack@rwang-workbench` | 설치 성공 | Yes |
 | B-2a | **임시 smoke rule로 hook 실제 실행 검증**: ①`.claude/hookify.phase6-smoke.local.md` 생성(frontmatter: `name: phase6-hook-smoke`, `event: bash`, `pattern: phase6-hook-smoke`, `action: warn` / **body에** `SMOKE-OK`) → ②Bash tool에서 `echo phase6-hook-smoke` 실행 → ③Claude Code UI에서 `SMOKE-OK` systemMessage 노출 확인 → ④파일 삭제. `/hooks`는 보조 진단용 | `SMOKE-OK` systemMessage 노출 | Yes |
 | B-3 | `/plugin install analysis-pack@rwang-workbench` | 설치 성공 | Yes |
