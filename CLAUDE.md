@@ -25,22 +25,48 @@
 
 ---
 
-## 다음 액션 — Phase 8 착수
+## 다음 액션 — Phase 8 plan v5.4 → Codex 9차 리뷰 (다음 세션)
 
-Phase 7 완료. 다음 세션은 Phase 8 실행 계획 작성으로 시작.
+Phase 8 진행 중. plan v1 → v5.4 누적 패치. 가이드라인 v1.2 갱신 완료. Codex 8차까지 수렴 추세 정상.
 
-**Phase 8 예비 scope** (MASTER_PLAN v1.5 §5 + §4.5 Public 전환 게이트):
-- §4.5 Public 전환 게이트 체크리스트: 라이선스 검토 / `THIRD_PARTY_NOTICES.md`(기존, 재확인) / **시크릿 스캔 자동화**(`gitleaks` 또는 `trufflehog`, 0 finding — Phase 4 이연) / `.mcp.json` 토큰 0건 / 절대경로·계정명 노출 0건 / `.env.example` / `.gitignore` 검증 / 공개 불가 자산 최종 확인
-- 통과 결과는 `docs/release-checklist-v{버전}.md`로 보존
-- `scripts/build-skills-zip.ps1`(§4.7 claude.ai Skills ZIP 파생 빌드)은 Phase 8 이후 선택 scope
+**수렴 추세**: 12 → 11 → 8 → 9(역행) → v5 전면 재작성(13건 흡수) → 4 → 2 → 1(non-BLOCK) → 2 → ?(9차 대기)
 
-Phase 8 plan 착수 시 `docs/phase8-plan.md` 신규 생성 + MASTER_PLAN §8 업데이트 루틴 반복.
+**다음 세션 첫 액션**:
+1. **`.claude/phase8-handoff.md` 읽기** — v5.4 시점 핸드오프 (8차 2건 흡수 결과 + 9차 prompt + working tree 상태)
+2. 사용자 "이어서 진행" 확인
+3. **Codex 9차 리뷰 호출** (Bash CLI, **Skill 호출 금지**):
+   ```bash
+   codex exec -C /d/claude/rwang-workbench -s read-only "$(cat /tmp/codex-9th-prompt.md)"
+   ```
+   prompt 본문은 `.claude/phase8-handoff.md` "9차 리뷰 prompt" 섹션 그대로 복사
+4. 결과 분석 → 사용자 보고
+   - **non-BLOCK / PASS**: G1 사용자 명시 승인 후 **Batch 8P** (Plan-fix seed commit) 착수
+   - **BLOCK**: v5.5 minor patch + Codex 10차
+
+**v5.4 누적 흡수 history**:
+- v5 (전면 재작성, 13건 — Codex 4차 9 + Claude self 4)
+- v5.1 — Codex 5차 BLOCK 4건
+- v5.2 — Codex 6차 BLOCK 2건
+- v5.3 — Codex 7차 non-BLOCK 1건 (자체정리)
+- v5.4 — Codex 8차 BLOCK 2건 (§4.1.5 `$gitleaksVersion` 검증 추가 + §4.3.10→§4.3.11 smoke 오참조 정정)
+
+**Working tree 상태** (다음 세션 진입 시):
+```
+ M CLAUDE.md
+?? .claude/
+?? docs/PLAN_DESIGN_GUIDELINES.md
+?? docs/phase8-plan.md
+```
+미commit. 8P seed commit이 본격 작업의 첫 step (Codex 9차 수렴 후).
+
+**주의**: Codex CLI background hang 현상 발견 — 9차 호출 시 5분 이상 출력 없으면 같은 명령 sync 재시도. 자세히는 핸드오프 노트 "미해결 / 주의 사항".
 
 ---
 
 ## 핵심 설계 문서
 
 - **[docs/MASTER_PLAN_v1.5.md](docs/MASTER_PLAN_v1.5.md)** — 전체 설계. §5 Phase 계획 + §8 상태. **수정 금지** (역사적 기록). §8만 Phase 마감 시 업데이트
+- **[docs/PLAN_DESIGN_GUIDELINES.md](docs/PLAN_DESIGN_GUIDELINES.md)** — phase plan 작성 5축(Public irreversibility / Atomic action / Repo 사실 확인 / 표현 일관성 / Scope 명시) + 메타 패턴(위상 변화 인지). **plan v1 초안 직후 self-review에 필수 적용**, Codex CLI 리뷰 호출 **전** 단계. phase8-plan v1 Codex 1차 BLOCK 회고에서 추출 (2026-04-25)
 - **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — Phase 5·6·7 블록 기록 완료. Phase 8부터 동일 패턴으로 추가
 - **[docs/RECOMMENDED_PLUGINS.md](docs/RECOMMENDED_PLUGINS.md)** — 5B 보강 완료. 향후 추천 항목 추가 시 갱신
 - **[docs/archive/](docs/archive/)** — 완료된 Phase 플랜·source-lock (`phase4-plan.md`, `phase4-source-lock.md`, `phase5-plan.md`, `phase6-plan.md`, `phase7-plan.md`)
@@ -93,6 +119,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 - **C-3 draw.io MCP / C-4 GCP MCP drop** — 팩 번들 X. RECOMMENDED_PLUGINS.md MCP 서브섹션 한 줄만 (2026-04-24 사용자 결정)
 - **`validate-plugins.ps1` Phase 6A에서 승격 완료** — `scripts/validate-plugins.ps1` (PS 5.1 호환, V-1~V-6)
 - **game-design-pack 유예** — Phase 2 결정
+- **phase plan 작성 흐름** — v1 초안 → `docs/PLAN_DESIGN_GUIDELINES.md` 5축 self-review → Codex CLI 리뷰 (`codex exec -C <repo> -s read-only ...`, **Skill 호출 금지**) → finding 통합 v2 패치 → 수렴까지 반복 → G1 사용자 승인. 2026-04-25 phase8-plan v1 BLOCK 회고로 정착
 
 ---
 
