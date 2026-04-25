@@ -2,7 +2,7 @@
 
 A personal Claude Code plugin marketplace curating general-purpose skills, commands, hooks, and agents from the broader ecosystem plus self-authored workflows.
 
-> **Status:** v0.1.0-alpha (scaffolded). Vendored content arrives in Phase 4; native workflows in Phase 5. See [docs/CHANGELOG.md](docs/CHANGELOG.md).
+> **Status:** v0.1.0 (Phase 8 release, 2026-04-25). 11 vendored plugins · 44 components · 2 packs. See [docs/CHANGELOG.md](docs/CHANGELOG.md).
 
 ## Packs
 
@@ -59,7 +59,7 @@ git config core.hooksPath scripts/git-hooks
 
 Bypass in emergencies: `git commit --no-verify` — document the reason in the commit message.
 
-## Install (local, pre-release)
+## Install
 
 ```
 /plugin marketplace add rwang2gun/rwang-workbench

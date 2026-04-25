@@ -4,7 +4,44 @@ All notable changes to `rwang-workbench` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project will move to semantic versioning from v0.1.0 onward.
 
-## [Unreleased]
+## [0.1.0] — 2026-04-25 — First public release
+
+Phase 3 alpha(0.1.0-alpha) 이후 Phase 4~8 누적 산출물의 첫 stable release.
+Vendoring 11 plugins · 44 components · 2 packs · 1 external recommend(codex).
+
+### Phase 8 — 2026-04-25
+
+**Phase 8P — Plan-fix seed**
+- phase8-plan v5 + PLAN_DESIGN_GUIDELINES v1.2 + CLAUDE.md sync 변경분을 본 phase 본 작업 전 별도 commit으로 고정. plan 본문 자기참조 sanitize 적용 (절대경로/사용자명/email은 placeholder + `$repo` 변수, P-2 Anthropic noreply 명시 면죄). 8A retroactive grep scope에 plan/guidelines 포함, 8D git mv 작동 보장.
+
+**Phase 8A — §4.5 Public 게이트 통과**
+- gitleaks 8.30.1 (`dir`/`git` syntax): 양 모드 0 finding (2026-04-25 21:24:32 +09:00).
+- Retroactive 절대경로·계정명 grep (P-1~P-4 strict 자연어 ↔ 검사 코드 1:1): 0 finding. allowlist line 단위 (hook PATH_PATTERNS 정의 line + Anthropic noreply footer line).
+- `.gitignore` 보강: `.claude/` 일반화 → 8A 후 ignored.
+- `.env.example`: 사용자 설정 env 0건으로 미작성 결정.
+- `docs/release-checklist-v0.1.0.md` 작성 — §4.5 8/8 PASS + Release-time 5종 drop. 본문은 변수 치환 후 specific 값 박힘 (placeholder 잔존 0건). **8A commit 상태 그대로 release까지 유지**.
+
+**Phase 8B — GitHub source 재설치 검증 (§3.1 wrapper inline + try/finally)**
+- preflight snapshot → Directory source 제거 → `claude plugin marketplace add rwang2gun/rwang-workbench` (GitHub source) → 두 팩 install → V-1~V-4 검증 → finally restore (Directory source 복원).
+- V-1 list / V-2 source.source `github` / V-3 installPath ∉ repo / V-4 orphan-check exit 0 / V-restore source.source `directory` 모두 PASS. dev 환경 정상 복원.
+
+**Phase 8C — Release commit + tag (prepared)**
+- 두 팩 `plugin.json` version `0.1.0-alpha` → `0.1.0`.
+- README L5 status: `v0.1.0-alpha (scaffolded)` → `v0.1.0 (Phase 8 release)`.
+- 본 CHANGELOG 전환 (`[Unreleased]` → `[0.1.0]`).
+- `docs/MASTER_PLAN_v1.5.md` §8: 8C release commit/tag prepared. push/smoke/Release object 결과는 8D 블록.
+- annotated tag `v0.1.0` 생성 (push는 G5 승인 후 8C-post에서).
+
+(8C-post 단계 — atomic push, release 후 GitHub source smoke, GitHub Release object 생성 — 결과는 아래 **Phase 8D** 블록에 8D commit 시 변수 치환으로 채워짐. 8C commit 시점에는 변수 placeholder만 잔존 — 8D commit 전 grep BLOCK으로 잔존 0건 보장)
+
+**Phase 8D — Closure + post-release 결과**
+- phase8-plan archive (`git mv` 작동, 8P seed 덕분).
+- CLAUDE.md Phase 9 (지속 운영) 전환.
+- MASTER_PLAN §8: 🔶 → ✅ Phase 8 완료 (8P/8A/8B/8C/8C-post/8D 흡수).
+- **8C-post 결과 (8D commit 시 변수 치환)**:
+  - atomic push: {{ATOMIC_RESULT}}
+  - release 후 GitHub source smoke: {{SMOKE_RESULT}} — 두 팩 version 0.1.0 + source.source `github` + installPath ∉ repo 확인. Directory source 복원 try/finally 보장.
+  - GitHub Release page: {{RELEASE_URL}}
 
 ### Phase 7 — 2026-04-25
 
