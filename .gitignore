@@ -28,5 +28,5 @@ notes-*.md
 *-personal.md
 scratch/
 
-# Claude Code local settings overlay (if any ever appears at repo root)
-.claude/settings.local.json
+# Claude Code local state (settings overlay, worktrees, tool results, etc.) — never commit
+.claude/
