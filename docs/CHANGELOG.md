@@ -39,9 +39,9 @@ Vendoring 11 plugins · 44 components · 2 packs · 1 external recommend(codex).
 - CLAUDE.md Phase 9 (지속 운영) 전환.
 - MASTER_PLAN §8: 🔶 → ✅ Phase 8 완료 (8P/8A/8B/8C/8C-post/8D 흡수).
 - **8C-post 결과 (8D commit 시 변수 치환)**:
-  - atomic push: {{ATOMIC_RESULT}}
-  - release 후 GitHub source smoke: {{SMOKE_RESULT}} — 두 팩 version 0.1.0 + source.source `github` + installPath ∉ repo 확인. Directory source 복원 try/finally 보장.
-  - GitHub Release page: {{RELEASE_URL}}
+  - atomic push: success
+  - release 후 GitHub source smoke: PASS - V-1/V-2/V-3/V-5 (both packs version 0.1.0 + source.source github + installPath not in repo) — 두 팩 version 0.1.0 + source.source `github` + installPath ∉ repo 확인. Directory source 복원 try/finally 보장.
+  - GitHub Release page: https://github.com/rwang2gun/rwang-workbench/releases/tag/v0.1.0
 
 ### Phase 7 — 2026-04-25
 

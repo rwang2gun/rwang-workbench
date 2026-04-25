@@ -4,62 +4,51 @@
 
 ---
 
-## 현재 상태 (2026-04-25)
+## 현재 상태 (v0.1.0 release 완료)
 
 | Phase | 상태 | 비고 |
 |---|---|---|
 | 1–4 | ✅ 완료 | vendoring + 스캐폴드 + 44 컴포넌트 편입 |
-| 5 | ✅ 완료 | 4배치 (5A~5D). Python hook cross-platform + check-recommended + pre-commit hook + 마감 |
-| 6 | ✅ 완료 | 3배치 (6A/6B/6C). `validate-plugins.ps1` 승격 + 인터랙티브 재검증 + Python 3.12 설치로 환경 특이사항 해소 |
-| **7A** | ✅ 완료 (commit `13ff93b`) | `scripts/check-orphan-originals.ps1` O-1~O-3 → 12 PASS / 0 WARN / 0 FAIL / 2 INFO (exit 0 clean). Codex 3-round (1차 High 2+Low 1, 2차 Low 2, 3차 No findings) |
-| **7B** | ⏭️ skip | 7A clean으로 정리 대상 없음 |
-| **7C** | ✅ 완료 (commit `7e38a38`) | 두 팩 재설치 + `claude plugin list` 3개 enabled + orphan-check 재확인 clean |
-| **7D** | ✅ 완료 | 마감: CHANGELOG Phase 7 블록 + MASTER_PLAN §8 + phase7-plan archive + 본 CLAUDE.md 동기화 |
-| **Phase 7** | ✅ **전체 완료** | Phase 8 대기 |
+| 5 | ✅ 완료 | 4배치 (5A~5D) |
+| 6 | ✅ 완료 | 3배치 (6A/6B/6C) |
+| 7 | ✅ 완료 | 3배치 (7A/7C/7D, 7B skip) |
+| 8 | ✅ 완료 | v0.1.0 첫 public release. 8P/8A-pre/8A/8B/8C/8C-post/8D |
+| **Phase 9** | ⬜ **지속 운영** | 트리거 기반(신규 자산·릴리스 전 점검·실패 제보) |
 
-**Working tree**: Phase 7D 마감 커밋 직후 → clean 유지.
-
-**현재 enabled 플러그인**: codex@openai-codex, productivity-pack@rwang-workbench, analysis-pack@rwang-workbench (3개).
-
-**Repo-local 훅 활성화 상태**: `core.hooksPath = scripts/git-hooks` 로컬에 설정됨 (이 PC). 다른 PC에서 클론 후 1회 실행 필요.
+**v0.1.0 release**: <https://github.com/rwang2gun/rwang-workbench/releases/tag/v0.1.0>
+**marketplace add**: `claude plugin marketplace add rwang2gun/rwang-workbench`
 
 ---
 
-## 다음 액션 — Phase 8 plan v5.4 → Codex 9차 리뷰 (다음 세션)
+## 현재 운영 단계 — Phase 9 (지속 운영)
 
-Phase 8 진행 중. plan v1 → v5.4 누적 패치. 가이드라인 v1.2 갱신 완료. Codex 8차까지 수렴 추세 정상.
+Phase 9는 trigger-driven 운영 모드. 정기 일정 없음. 다음 trigger 발생 시에만 작업:
 
-**수렴 추세**: 12 → 11 → 8 → 9(역행) → v5 전면 재작성(13건 흡수) → 4 → 2 → 1(non-BLOCK) → 2 → ?(9차 대기)
+- **신규 컴포넌트 추가** → `scripts/validate-plugins.ps1` 재실행 + `docs/CHANGELOG.md` 갱신 + 새 phase plan 작성 (`docs/PLAN_DESIGN_GUIDELINES.md` 5축 self-review → Codex CLI 리뷰)
+- **다음 릴리스 (v0.1.1, v0.2.0 등)** → 신규 phase plan + §4.5 Public 게이트 재실행 (gitleaks 양 모드 0 finding) + GitHub source smoke
+- **새 PC에서 셋업** → `scripts/check-orphan-originals.ps1` 1회 실행 + `git config core.hooksPath scripts/git-hooks` 1회 설정
+- **실패 제보 / 사용자 issue** → 재현 → 회고 → patch phase
 
-**다음 세션 첫 액션**:
-1. **`.claude/phase8-handoff.md` 읽기** — v5.4 시점 핸드오프 (8차 2건 흡수 결과 + 9차 prompt + working tree 상태)
-2. 사용자 "이어서 진행" 확인
-3. **Codex 9차 리뷰 호출** (Bash CLI, **Skill 호출 금지**):
-   ```bash
-   codex exec -C /d/claude/rwang-workbench -s read-only "$(cat /tmp/codex-9th-prompt.md)"
-   ```
-   prompt 본문은 `.claude/phase8-handoff.md` "9차 리뷰 prompt" 섹션 그대로 복사
-4. 결과 분석 → 사용자 보고
-   - **non-BLOCK / PASS**: G1 사용자 명시 승인 후 **Batch 8P** (Plan-fix seed commit) 착수
-   - **BLOCK**: v5.5 minor patch + Codex 10차
+**Plan v5.x post-release patch 후보**: `docs/archive/phase8-plan.md` Issue § 또는 다음 phase plan 도입부에 [부수 발견](#이번-세션-부수-발견-plan-v5x-post-release-patch-후보) 흡수.
 
-**v5.4 누적 흡수 history**:
-- v5 (전면 재작성, 13건 — Codex 4차 9 + Claude self 4)
-- v5.1 — Codex 5차 BLOCK 4건
-- v5.2 — Codex 6차 BLOCK 2건
-- v5.3 — Codex 7차 non-BLOCK 1건 (자체정리)
-- v5.4 — Codex 8차 BLOCK 2건 (§4.1.5 `$gitleaksVersion` 검증 추가 + §4.3.10→§4.3.11 smoke 오참조 정정)
+---
 
-**Working tree 상태** (다음 세션 진입 시):
-```
- M CLAUDE.md
-?? .claude/
-?? docs/PLAN_DESIGN_GUIDELINES.md
-?? docs/phase8-plan.md
-```
-미commit. 8P seed commit이 본격 작업의 첫 step (Codex 9차 수렴 후).
+## Phase 8 plan v5.5 수렴 history (참고)
 
-**주의**: Codex CLI background hang 현상 발견 — 9차 호출 시 5분 이상 출력 없으면 같은 명령 sync 재시도. 자세히는 핸드오프 노트 "미해결 / 주의 사항".
+- v1~v4: 1~4차 BLOCK 누적, v4에서 9건 역행
+- v5 전면 재작성 (Codex 4차 9 + Claude self 4 = 13건 흡수)
+- v5.1~v5.4: Codex 5~8차 흡수 (4 → 2 → 1(non-BLOCK) → 2건)
+- **v5.5: Codex 9차 non-BLOCK 2건 (L-1 표 제목 / N-1 정규식 trailing `$`) 흡수**
+- **Codex 10차 PASS (Findings 0건)** → G1 승인 → 8P 진행
+
+---
+
+## 이번 세션 부수 발견 (plan v5.x post-release patch 후보)
+
+1. **§4.1.2 `$pid` 자동변수 충돌** — `foreach ($pid in $allPatterns.Keys)`은 PS5.1 read-only 자동변수와 충돌. `$patternId` rename으로 우회.
+2. **§4.3.6 / §4.4.4 PS 5.1 인코딩 bug** — `Get-Content -Raw` (default ANSI) + `Out-File -Encoding utf8` (BOM 포함) → 한글 깨짐. .NET API로 우회.
+3. **§4.1.1 winget install 직후 PATH 미반영** — registry-derived PATH refresh 코드 추가 필요.
+4. **CLAUDE.md `core.hooksPath` stale** — "설정됨" 표기지만 실제 unset. 8P 직전 `git config core.hooksPath scripts/git-hooks` 1회 set으로 회복.
 
 ---
 
@@ -67,9 +56,9 @@ Phase 8 진행 중. plan v1 → v5.4 누적 패치. 가이드라인 v1.2 갱신 
 
 - **[docs/MASTER_PLAN_v1.5.md](docs/MASTER_PLAN_v1.5.md)** — 전체 설계. §5 Phase 계획 + §8 상태. **수정 금지** (역사적 기록). §8만 Phase 마감 시 업데이트
 - **[docs/PLAN_DESIGN_GUIDELINES.md](docs/PLAN_DESIGN_GUIDELINES.md)** — phase plan 작성 5축(Public irreversibility / Atomic action / Repo 사실 확인 / 표현 일관성 / Scope 명시) + 메타 패턴(위상 변화 인지). **plan v1 초안 직후 self-review에 필수 적용**, Codex CLI 리뷰 호출 **전** 단계. phase8-plan v1 Codex 1차 BLOCK 회고에서 추출 (2026-04-25)
-- **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — Phase 5·6·7 블록 기록 완료. Phase 8부터 동일 패턴으로 추가
+- **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — Phase 5·6·7·8 블록 기록 완료. v0.1.0 release. 다음 릴리스 시 동일 패턴으로 추가
 - **[docs/RECOMMENDED_PLUGINS.md](docs/RECOMMENDED_PLUGINS.md)** — 5B 보강 완료. 향후 추천 항목 추가 시 갱신
-- **[docs/archive/](docs/archive/)** — 완료된 Phase 플랜·source-lock (`phase4-plan.md`, `phase4-source-lock.md`, `phase5-plan.md`, `phase6-plan.md`, `phase7-plan.md`)
+- **[docs/archive/](docs/archive/)** — 완료된 Phase 플랜·source-lock (`phase4-plan.md`, `phase4-source-lock.md`, `phase5-plan.md`, `phase6-plan.md`, `phase7-plan.md`, `phase8-plan.md`)
 - **[scripts/validate-plugins.ps1](scripts/validate-plugins.ps1)** — Phase 6A 승격 validator. Phase 8 배포 전 / 신규 컴포넌트 추가 시 재실행 (PS 5.1 호환)
 - **[scripts/check-orphan-originals.ps1](scripts/check-orphan-originals.ps1)** — Phase 7A orphan-originals detector. 다른 PC에서 셋업 시 1회 실행하여 원본 11개 독립 설치·`~/.claude/skills/` 복제본 여부 검증 (PS 5.1 호환, exit 0=clean / 2=WARN / 1=FAIL)
 
@@ -125,7 +114,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 
 ## 대기 중인 사용자 결정
 
-없음. Phase 7 전체 완료. Phase 8 착수 시점은 사용자 지시 대기.
+없음. Phase 8 v0.1.0 release 완료. Phase 9는 trigger 발생 시점까지 대기.
 
 ---
 
